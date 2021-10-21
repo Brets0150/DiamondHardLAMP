@@ -22,7 +22,7 @@
 str_command="$1"
 
 # Config file location and name.
-str_settings_file_name="./settings.sh"
+str_settings_file_name="./settings_mine.sh"
 
 # This scripts log file.
 str_logFile="$(pwd)/dhl_install_log.txt"
@@ -580,49 +580,58 @@ fun_baseInstall() {
         echo -e "${color_GREEN}Base Packaged Install SUCCESS${color_NC}") || \
     (echo -e "${color_RED}Core Software Install Failed${color_NC}") ) | tee -a -i "${str_logFile}"
     ############################
-    # Disable console no-password root login
-    if ! which mysql > /dev/null 2>&1 ; then
-    echo "The MySQL/MariaDB client mysql(1) is not installed."
-    exit 1
-    fi
-
-    if ! mysqladmin --user=root status > /dev/null 2>&1 ; then
-    echo "Database root password already set"
-    exit 0
-    fi
-
-    mysql --user=root <<_EOF_
-    UPDATE mysql.user SET Password=PASSWORD('${db_root_password}') WHERE User='root';
-    DELETE FROM mysql.user WHERE User='';
-    DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
+    ######## MySQL Set Up ######
+    # These are the key commands run in "mysql_secure_installation". I have distilled that script to the below, making automation better..
+    local str_mysqlSecSetupScript
+    # Using "Printf" is the only method to pass a SQL script as a variable. You could have done this in a "heredoc"(<<EOF....EOF)
+    # the double quotes will corrupt your string. I would have had to copy and paste this same script multiple times, and that is just ugly.
+    /usr/bin/printf -v str_mysqlSecSetupScript "
+    # Start transaction log.
+    START TRANSACTION;
+    # Disable no-pass root login via unix.socket plugin.
+    ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password;
+    # Set the root mysql User password.
+    ALTER USER 'root'@'localhost' IDENTIFIED VIA mysql_native_password USING PASSWORD('%s');
+    # Delete the anonymous users account.
+    DELETE FROM mysql.global_priv WHERE User='';
+    # Remove Root Remote login.
+    DELETE FROM mysql.global_priv WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
+    # Remove Test Database.
     DROP DATABASE IF EXISTS test;
-    DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';
+    # Removing privileges on test database.
+    DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%%';
+    # Flush previleges so changes take effect.
     FLUSH PRIVILEGES;
-_EOF_
-
-    if ! mysql -uroot -e ";"; then
+    # Commit the transactions made.
+    COMMIT;" "${str_clearTextMysqlRootPW}"
+    ############################
+    # Check is root mysql user can login without a password. If a no-pw root login allowed(unix.socket), disable that for security.
+    if ! /usr/bin/mariadb --user=root -e ';' ; then
+        # Root Mysql User password is set, not empty, or no-pw root login disabled(This is good).
         local str_currentMysqlRootPw
         echo -e "${color_GREEN}No-password MySQL-root login at console already disabled.${color_NC}" | tee -a -i "${str_logFile}"
-        until mysql -uroot -p"${str_currentMysqlRootPw}" -e ";" ; do
+        # Get the MySQL root user password from the user. Do this untill the correct password is given. The User must break-opt if they do not have PW.
+        until /usr/bin/mariadb --user=root --password="${str_currentMysqlRootPw}" -e ';'; do
             echo -e "${color_YELLOW}--MySQL password not blank--${color_NC} " | tee -a -i "${str_logFile}"
             read -r -s -p "Enter the current MySQL Root Password: " str_currentMysqlRootPw
-            echo "${str_currentMysqlRootPw}"
-            echo ''
         done
-        # Configure the MariaDB Server
-        echo -e "${str_currentMysqlRootPw}\n\n${str_clearTextMysqlRootPW}\n${str_clearTextMysqlRootPW}\n\n\n\n\n " | mysql_secure_installation 2>/dev/null
+        # Configure the MariaDB Server, same key commands run in "mysql_secure_installation"
+        /usr/bin/mariadb --force --verbose --user=root --password="${str_currentMysqlRootPw}" -e "${str_mysqlSecSetupScript}"
     else
+        # Root Mysql console no-password root login was allowed. Disabiling this.
         echo -e "${color_RED}Disabling console no-password root login${color_NC}" | tee -a -i "${str_logFile}"
-        # Configure the MariaDB Server
-        echo -e "\n\n${str_clearTextMysqlRootPW}\n${str_clearTextMysqlRootPW}\n\n\n\n\n " | mysql_secure_installation 2>/dev/null
-        mysql -uroot -p"${str_clearTextMysqlRootPW}" -e "UPDATE mysql.user SET plugin = '' WHERE user = 'root' AND host = 'localhost';"
+        # Configure the MariaDB Server, same key commands run in "mysql_secure_installation"
+        # add --silent after debug
+        /usr/bin/mariadb --force --verbose --user=root -e "${str_mysqlSecSetupScript}"
     fi
-    # Test the final password works.
-    if ! mysql -uroot -p"${str_clearTextMysqlRootPW}" -e ";"; then
+    ############################
+    # Test if the final password works.
+    if ! /usr/bin/mariadb --user=root --password="${str_clearTextMysqlRootPW}" -e ';'; then
         echo -e "${color_RED}!!That Root MySQL Password is INCORRECT!!${color_NC} " | tee -a -i "${str_logFile}"
     else
         echo -e "${color_GREEN}Root MySQL Password test is GOOD!${color_NC}" | tee -a -i "${str_logFile}"
     fi
+    #### END MySQL Set Up ######
     ############################
     # PhpMyAdmin .htaccess setup.
     echo -e "AuthType Basic\n"\
@@ -645,7 +654,7 @@ _EOF_
     fi
     # Edit PhpMyAdmin config to allow .htaccess file overrides.
     ln -s /etc/phpmyadmin/apache.conf /etc/apache2/conf-available/phpmyadmin.conf
-    ( (a2enconf phpmyadmin && echo -e "${color_GREEN}PHPMyAdmin Enabled in Apache SUCCESS${color_NC}") || \
+    ( (/usr/sbin/a2enconf phpmyadmin && echo -e "${color_GREEN}PHPMyAdmin Enabled in Apache SUCCESS${color_NC}") || \
     (echo -e "${color_RED}PHPMyAdmin Enabled in Apache Failed${color_NC}") ) | tee -a -i "${str_logFile}"
     sed -i '/DirectoryIndex.*/a \ \ \ \ AllowOverride\ AuthConfig\n\ \ \ \ SecRuleEngine\ Off' /etc/apache2/conf-enabled/phpmyadmin.conf
     ############################
@@ -879,6 +888,7 @@ fun_ossecInstall() {
         str_whiteListRange="$(ip a|grep 'inet '|grep -v '127.'|awk -F' ' '{print $2}')"
         # build the OSSEC config file, so no user interaction is needed.
         echo -e "\n" \
+            "USER_LANGUAGE=\"en\"\n" \
             "USER_NO_STOP=\"y\"\n" \
             "USER_INSTALL_TYPE=\"local\"\n" \
             "USER_DIR=\"/var/ossec\"\n" \
@@ -949,10 +959,12 @@ fun_getNewWebUserDetails() {
         echo -e "${color_YELLOW}This means the DNS 'A' record for ${str_domainName} MUST resolve to this server!${color_NC}"
         echo -e "${color_YELLOW}Let's Encrypt CertBot will query this server from the"
         echo -e "${color_YELLOW}Internet to confirm you really own the domain.${color_NC}"
+        echo ''
         echo -e "${color_YELLOW}Below is the public DNS Records for ${str_domainName},"
         echo -e "${color_YELLOW}do these IPs reach this server on port 80(HTTP) and 443(HTTPS)?!?${color_NC}"
+        echo -e "${color_RED}!!IF YOU SEE NO IP(s) LISTED BELOW, YOU HAVE A DNS ISSUE AND NEED TO STOP!!${color_NC}"
         echo ''
-        echo -e "${str_dnsCheck}"
+        echo -e "DNS Record: ""${str_dnsCheck}"
         echo ''
         echo '----------------------------'
         echo 'Are you sure the DNS records are correct?'
@@ -1158,7 +1170,7 @@ fun_certbotInstall(){
         echo -e "${color_YELLOW}Let's Encrypt CertBot Already installed.${color_NC}" | tee -a -i "${str_logFile}"
     else
         echo -e "${color_YELLOW}Missing CertBot! Getting it now.${color_NC}" | tee -a -i "${str_logFile}"
-        ( (apt-get install -yq certbot && echo -e "${color_GREEN}CertBot Install SUCCESS${color_NC}") || \
+        ( (apt-get install -yq certbot python3-certbot-apache && echo -e "${color_GREEN}CertBot Install SUCCESS${color_NC}") || \
         (echo -e "${color_RED}CertBot install !FAIL!${color_NC}")  ) | tee -a -i "${str_logFile}"
         # Confirm the install is good.
         if command -v certbot &> /dev/null ; then
@@ -1350,6 +1362,7 @@ case "${str_command}" in
         ;;
 
     --test)
+        # Test
         ;;
 
     --addwebuser)
@@ -1387,4 +1400,4 @@ esac
 exit 0
 # End Script
 ############################
-############################"
+############################

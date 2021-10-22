@@ -204,12 +204,14 @@ fun_falseLoadingBar(){
 fun_addNewAccount() {
     local str_userName="$1"
     local str_domainName="$2"
+    ############################
     # Check if all arguments have been given
     if [ -z "${str_userName}" ] || [ -z "${str_domainName}" ]; then
             echo "Missing arguments"
             echo "correct syntax: ./addWebUserAccount.sh UserName DomainName"
             exit 1
     fi
+    ############################
     # Check for repeat username
     if grep "${str_userName}" /etc/passwd ; then
             echo "User already exists!"
@@ -240,9 +242,7 @@ fun_addNewAccount() {
     AuthName 'Enter you Username & Password.'
     AuthUserFile /home/${str_userName}/.secret/.htpasswd
     Require valid-user" > "/home/${str_userName}/.htaccess"
-    ##
-    # END User Create
-    ##
+    ############################
     ## Add user .htaccess rights to MySQL Web Tool like phpmyadmin or Adminer.
     if [ -f "/home/${str_userName}/.secret/.htpasswd" ] ; then
         (htpasswd -B -C 10 -b "/home/${str_userName}/.secret/.htpasswd" "${str_userName}" "${str_clearTextWebPW}") >/dev/null 2>&1
@@ -266,9 +266,10 @@ fun_addNewAccount() {
     # Limit the Mysql Username
     str_mysqlUserName="${str_userName:0:15}"
     ##
-    echo -e "${color_YELLOW}Please enter ROOT user MySQL Password. This is needed to set up the new user's MySQL account.${color_NC} "
+    echo -e "${color_YELLOW}Please enter ROOT user MySQL Password.${color_NC} "
     echo -e "${color_YELLOW}This is needed to set up the new user's MySQL account.${color_NC} "
     read -s -r -p "Enter MySQL password: " str_rootPasswd
+    echo ''
     # Number of guesses counter to break endless loops.
     int_mysqlPassTrys=0
     # Make sure the MySQL Password is good.
@@ -295,45 +296,40 @@ fun_addNewAccount() {
     fi
     # END MySQL user account creation
     ############################
-    #
     # Add Web User Data to file for later use in Backs and removals.
     fun_createWebUserInfoFile "${str_domainName}" "${str_userName}" "${str_mysqlUserName}" "${str_databaseName}"
-    #
     ############################
     # Make sure Apache SSL model is enabled
-    ##
     if [ -f "/etc/apache2/mods-enabled/ssl.load" ] && [ -f "/etc/apache2/mods-enabled/ssl.conf" ] ; then
-        echo ""
         echo -e "${color_GREEN}SSL Engine already running${color_NC}" | tee -a -i "${str_logFile}"
     else
         echo "SSL Engine is off, turn on.."
         ( (a2enmod ssl && echo -e "${color_GREEN}Apache SSL Mod enable SUCCESS${color_NC}") || \
-        (echo -e "${color_RED}Apache SSL Mod enable Failed${color_NC}") ) | tee -a -i "${str_logFile}"
+        (echo -e "${color_RED}Apache SSL Mod enable !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
     fi
-    #
+    # Make the ReWrite Module is enabled.
     if [ -f /etc/apache2/mods-enabled/rewrite.load ] ; then
         echo -e "${color_GREEN}ReWrite Engine already running${color_NC}" | tee -a -i "${str_logFile}"
     else
         echo "ReWrite Engine is off, Turning on.."
         ( (a2enmod rewrite && echo -e "${color_GREEN}Apache rewrite Mod enable SUCCESS${color_NC}") || \
-        (echo -e "${color_RED}Apache rewrite Mod enable Failed${color_NC}") ) | tee -a -i "${str_logFile}"
+        (echo -e "${color_RED}Apache rewrite Mod enable !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
     fi
-    ##
+    ############################
     # Generate Self-Signed Cert for website.
     (openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
     -keyout "/home/${str_userName}/ssl/${str_domainName}.key" \
     -out "/home/${str_userName}/ssl/${str_domainName}.crt" \
     -subj "/C=${str_country}/ST=${str_state}/L=${str_locality}/O=${str_organization}/OU=${str_organizationalunit}/CN=${str_domainName}/emailAddress=${str_certEmail}") >/dev/null 2>&1
-    ##
     ############################
     # Start create apache config file with self signed cert. Needed to make good cert
     local str_apacheConfigFile
     str_apacheConfigFile="${str_apache2Dir}sites-available/${str_domainName}.conf"
     touch "${str_apacheConfigFile}"
-    # Add Custom Error pages
+    # Create a Custom 404 Error pages
     echo "<h1 style='color:red'>Error 404: Not found :-(</h1>
     <p>Sorry, but I cannot find that file..  Are you sure you typed in the correct URL?</p>" > "/home/${str_userName}/wwwroot/custom_404.html"
-    #
+    # Create a Custom 5xx Error pages
     echo "<h1>Bonk! Something went wrong...</h1> > /var/www/html/custom_50x.html
     <p>Hmm.. We seem to be having some technical difficulties. Hang tight.</p>" > "/home/${str_userName}/wwwroot/custom_50x.html"
     ##
@@ -411,8 +407,9 @@ fun_addNewAccount() {
             CustomLog /home/${str_userName}/logs/${str_domainName}_access.log combined
         </VirtualHost>
     </IfModule>" > "${str_apacheConfigFile}"
-    ##
+    ############################
     # Create the AppArmor Config
+    # AppArmor and Apache must be configured and the new site enabled BEFORE we can have LetsEncrypt issue a SSL cert!
     echo "
     ^${str_domainName} {
     #include <abstractions/apache2-common>
@@ -420,37 +417,49 @@ fun_addNewAccount() {
     #include <abstractions/php>
     /home/${str_userName}/wwwroot/** rw,
     /home/${str_userName}/.secret/.htpasswd r,
+    /var/lib/letsencrypt/http_challenges/** r,
     /home/${str_userName}/logs/${str_domainName}_access.log w,
     /home/${str_userName}/logs/${str_domainName}_error.log w,
     /home/${str_userName}/logs/${str_domainName}_modsec.log w,
     }" > "/etc/apparmor.d/apache2.d/${str_domainName}-aa"
      # Parse and Enable the new AppArmor Config.
     ( (apparmor_parser -r /etc/apparmor.d/usr.sbin.apache2 && echo -e "${color_GREEN}Apache's AppArmor profile enforced SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}Apache's AppArmor profile enforced Failed${color_NC}") ) | tee -a -i "${str_logFile}"
-    # End file creation first Pass
+    (echo -e "${color_RED}Apache's AppArmor profile enforced !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
     # Enable the new website config file.
     ( ( a2ensite "${str_domainName}.conf" >/dev/null 2>&1 && echo -e "${color_GREEN}Enable new site SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}Enable new site Failed${color_NC}") ) | tee -a -i "${str_logFile}"
+    (echo -e "${color_RED}Enable new site !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
     ############################
     if [ "${bln_letsencrypt_support}" == true ]; then
-        # Confirm CertBot is intstalled.
+        # Confirm CertBot is intstalled. The "fun_certbotInstall" funtion must return a code of '0' to ensure CertBot is working corretly.
+        local int_certbotInstallExitCode
         fun_certbotInstall
-        # Create a new SSL cert
-        certbot certonly -n --apache --agree-tos --email "admin@${str_domainName}" -d "${str_domainName}"
-        # End CertBot check and SSL cert install for site
-        # sed -i "s/SSLCertificateFile \/home\/${str_userName}\/ssl\/${str_domainName}.crt/SSLCertificateFile \/etc\/letsencrypt\/live\/${str_domainName}\/cert.pem/g" "${str_apacheConfigFile}"
-        # sed -i "s/SSLCertificateChainFile \/home\/${str_userName}\/ssl\/${str_domainName}.crt/SSLCertificateChainFile \/etc\/letsencrypt\/live\/${str_domainName}\/fullchain.pem/g" "${str_apacheConfigFile}"
-        # sed -i "s/SSLCertificateKeyFile \/home\/${str_userName}\/ssl\/${str_domainName}.key/SSLCertificateKeyFile \/etc\/letsencrypt\/live\/${str_domainName}\/privkey.pem/g" "${str_apacheConfigFile}"
+        int_certbotInstallExitCode=$?
+        # Tell user we are genorating a new cert.
+        echo -e "${color_YELLOW}Certbot now issuing a new SSL Cert...${color_NC}" | tee -a -i "${str_logFile}"
+        # Create a new SSL cert with Certbot.
+        if [ ${int_certbotInstallExitCode} -eq 0 ] && (certbot certonly -n --apache --agree-tos --email "admin@${str_domainName}" -d "${str_domainName}"); then
+            # The Certbot exited with code 0. Cert creation good.
+            echo -e "${color_GREEN}Certbot issue new SSL Cert SUCCESS${color_NC}" | tee -a -i "${str_logFile}"
+            # Change the Apache config for the site to use the new certs.
+            sed -i "s/SSLCertificateFile \/home\/${str_userName}\/ssl\/${str_domainName}.crt/SSLCertificateFile \/etc\/letsencrypt\/live\/${str_domainName}\/cert.pem/g" "${str_apacheConfigFile}"
+            sed -i "s/SSLCertificateChainFile \/home\/${str_userName}\/ssl\/${str_domainName}.crt/SSLCertificateChainFile \/etc\/letsencrypt\/live\/${str_domainName}\/fullchain.pem/g" "${str_apacheConfigFile}"
+            sed -i "s/SSLCertificateKeyFile \/home\/${str_userName}\/ssl\/${str_domainName}.key/SSLCertificateKeyFile \/etc\/letsencrypt\/live\/${str_domainName}\/privkey.pem/g" "${str_apacheConfigFile}"
+        else
+            # There was an issue with the LetsEncrypt CertBot.
+            echo -e "${color_RED}Certbot issue new SSL Cert !FAIL!${color_NC}"  | tee -a -i "${str_logFile}"
+            # If fail report it and add the LetsEncrypt debug log to the DHL_Install log.
+            cat '/var/log/letsencrypt/letsencrypt.log' | tee -a -i "${str_logFile}"
+        fi
     else
         echo -e "${color_YELLOW}Certbot Disabled. Using self-signed cert.${color_NC}"
     fi
     ############################
     # Restart Apache
     ( (apachectl restart >/dev/null 2>&1 && echo -e "${color_GREEN}Apache service SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}Apache service restart Failed${color_NC}") ) | tee -a -i "${str_logFile}"
+    (echo -e "${color_RED}Apache service restart !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
     #
     ( (service ssh restart >/dev/null 2>&1 && echo -e "${color_GREEN}SSH service SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}SSH service restart Failed${color_NC}") ) | tee -a -i "${str_logFile}"
+    (echo -e "${color_RED}SSH service restart !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
     ############################
     ##
     echo "====================================================="
@@ -536,7 +545,7 @@ fun_modSecure_install() {
     fun_modSeccure_remove
     # Install the Mod_Sec basic packages.
     ( (apt-get install -yq libapache2-mod-security2 && echo -e "${color_GREEN}ModSecure Install SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}ModSecurity install Failed${color_NC}") ) | tee -a -i "${str_logFile}"
+    (echo -e "${color_RED}ModSecurity install !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
     #
     cp /etc/modsecurity/modsecurity.conf-recommended /etc/modsecurity/modsecurity.conf
     sed -ie "s/SecRuleEngine\ DetectionOnly/SecRuleEngine\ On/g" /etc/modsecurity/modsecurity.conf
@@ -550,7 +559,7 @@ fun_modSecure_install() {
     fi
     # Restart Apache to apply the changes.
     ( (a2enmod headers && systemctl restart apache2.service && echo -e "${color_GREEN}ModSecure Header-Mod Install SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}ModSecurity install Failed${color_NC}") ) | tee -a -i "${str_logFile}"
+    (echo -e "${color_RED}ModSecurity install !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
     # Confirm the ModSecurity Module is loaded.
     if [ -z "$(apachectl -M | grep security | tr -d ' ')" ]; then
         echo -e "${color_RED}ModSec not loaded!${color_NC} "
@@ -578,7 +587,7 @@ fun_baseInstall() {
     export DEBIAN_FRONTEND=noninteractive
     ( (apt-get install -yq phpmyadmin mariadb-server apache2 php git unzip htop atop bash-completion libpam-pwquality bc && \
         echo -e "${color_GREEN}Base Packaged Install SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}Core Software Install Failed${color_NC}") ) | tee -a -i "${str_logFile}"
+    (echo -e "${color_RED}Core Software Install !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
     ############################
     ######## MySQL Set Up ######
     # These are the key commands run in "mysql_secure_installation". I have distilled that script to the below, making automation better..
@@ -655,7 +664,7 @@ fun_baseInstall() {
     # Edit PhpMyAdmin config to allow .htaccess file overrides.
     ln -s /etc/phpmyadmin/apache.conf /etc/apache2/conf-available/phpmyadmin.conf
     ( (/usr/sbin/a2enconf phpmyadmin && echo -e "${color_GREEN}PHPMyAdmin Enabled in Apache SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}PHPMyAdmin Enabled in Apache Failed${color_NC}") ) | tee -a -i "${str_logFile}"
+    (echo -e "${color_RED}PHPMyAdmin Enabled in Apache !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
     sed -i '/DirectoryIndex.*/a \ \ \ \ AllowOverride\ AuthConfig\n\ \ \ \ SecRuleEngine\ Off' /etc/apache2/conf-enabled/phpmyadmin.conf
     ############################
     # Enforce Strong passwords.
@@ -667,7 +676,7 @@ fun_baseInstall() {
 
 fun_apacheSecConfig() {
     ( (systemctl enable apache2 && echo -e "${color_GREEN}Apache service enabled at boot SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}Failed to Enable Apache service at boot!${color_NC}") ) | tee -a -i "${str_logFile}"
+    (echo -e "${color_RED}!FAIL! to Enable Apache service at boot!${color_NC}") ) | tee -a -i "${str_logFile}"
     # Custom Apache Error Pages Replace the "000-default" index file.
     echo "<h1 style='color:red'>Error 404: Not found :-(</h1>
     <p>Sorry, but I cannot find that file..  Are you sure you typed in the correct URL?</p>" > /var/www/html/custom_404.html
@@ -736,7 +745,7 @@ fun_firewallConfig() {
 
 fun_fail2banConfig() {
     ( (apt-get install -yq fail2ban sendmail sendmail-bin git && echo -e "${color_GREEN}Fail2Ban Install SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}Fail2Ban or SendMail Install Failed${color_NC}")  ) | tee -a -i "${str_logFile}"
+    (echo -e "${color_RED}Fail2Ban or SendMail Install !FAIL!${color_NC}")  ) | tee -a -i "${str_logFile}"
     # Fail2Ban Config
     echo -e "[DEFAULT]\ndbpurgeage = 30d" > /etc/fail2ban/fail2ban.local
     #
@@ -800,10 +809,10 @@ fun_fail2banConfig() {
     chmod 644 /etc/fail2ban/*.local
     # Enable SendMail to run at boot and restart the service
     ( (systemctl enable sendmail && systemctl start sendmail && echo -e "${color_GREEN}SendMail Start Service SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}SendMail Start Service Failed${color_NC}") ) | tee -a -i "${str_logFile}"
+    (echo -e "${color_RED}SendMail Start Service !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
     # Enable Fail2Ban to run at boot and restart the service
     ( (systemctl enable fail2ban && systemctl restart fail2ban && echo -e "${color_GREEN}Fail2Ban Start Service SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}Fail2Ban Start Service Failed${color_NC}") ) | tee -a -i "${str_logFile}"
+    (echo -e "${color_RED}Fail2Ban Start Service !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
     ##
 }
 ############################
@@ -811,31 +820,31 @@ fun_fail2banConfig() {
 fun_apparmorInstall() {
     # Install AppArmor Profiles, AppArmor Utilities, and AppArmor Apache2 Modules
     ( (apt-get -y install apparmor-profiles apparmor-utils libapache2-mod-apparmor && echo -e "${color_GREEN}AppArmor Install SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}AppArmor Install Failed${color_NC}") ) | tee -a -i "${str_logFile}"
+    (echo -e "${color_RED}AppArmor Install !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
     #
     # Remove AppArmor
     # apt-get remove --purge apparmor apparmor-profiles apparmor-utils libapache2-mod-apparmor
     #
     # Enable Apache Mods mpm_prefork, needed for AppArmor
     ( (a2enmod mpm_prefork && echo -e "${color_GREEN}Apache Mod mpm_prefork enable SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}Apache Mod mpm_prefork enable Failed${color_NC}") ) | tee -a -i "${str_logFile}"
+    (echo -e "${color_RED}Apache Mod mpm_prefork enable !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
     # Enable Apache Mods apparmor.
     ( (a2enmod apparmor && echo -e "${color_GREEN}Apache Mod apparmor enable SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}Apache Mod apparmor enable Failed${color_NC}") ) | tee -a -i "${str_logFile}"
+    (echo -e "${color_RED}Apache Mod apparmor enable !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
     # Enable AppArmor at boot and start the service
     ( (systemctl enable apparmor && systemctl start apparmor && echo -e "${color_GREEN}AppArmor Enabled and started SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}AppArmor Enabled and started Failed${color_NC}") ) | tee -a -i "${str_logFile}"
+    (echo -e "${color_RED}AppArmor Enabled and started !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
     # PhpMyAdmin Install AppArmor Config
     fun_phpmyadminApparmor
     # Parse the Apache2 AppArmor profile.
     ( (apparmor_parser -a /etc/apparmor.d/usr.sbin.apache2 && echo -e "${color_GREEN}Apache's AppArmor profile enforced SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}Apache's AppArmor profile enforced Failed${color_NC}") ) | tee -a -i "${str_logFile}"
+    (echo -e "${color_RED}Apache's AppArmor profile enforced !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
     # Enforce Apache2 AppArmor profile.
     ( (aa-enforce /etc/apparmor.d/usr.sbin.apache2 && echo -e "${color_GREEN}Apache's AppArmor profile enforced SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}Apache's AppArmor profile enforced Failed${color_NC}") ) | tee -a -i "${str_logFile}"
+    (echo -e "${color_RED}Apache's AppArmor profile enforced !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
     # Restart Apache and AppArmor to apply changes
     ( (systemctl restart apparmor.service && systemctl restart apache2.service && echo -e "${color_GREEN}AppArmor Start Service SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}AppArmor Start Service Failed${color_NC}") ) | tee -a -i "${str_logFile}"
+    (echo -e "${color_RED}AppArmor Start Service !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
 }
 ############################
 
@@ -907,7 +916,6 @@ fun_ossecInstall() {
             "USER_WHITE_LIST=\"${str_whiteListRange}\"\n" \
              "" > /tmp/ossec-hids-3.6.0/etc/preloaded-vars.conf
         # Run the installer script.
-        # echo -e "\n\ny\nlocal\n\n\n${str_adminEmail}\n\n\n\n\n\n\n\n\n" | /tmp/ossec-hids-3.6.0/install.sh
         /tmp/ossec-hids-3.6.0/install.sh
         # Add Rule to ignore SNAP loop drives.
         fun_ossecConfig
@@ -1033,7 +1041,7 @@ fun_deleteUserAccount() {
 fun_installAutoUpdate(){
     # Install all the needed packages.
     ( (apt-get install -yq unattended-upgrades apt-listchanges && echo -e "${color_GREEN}Auto Updater Install SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}Auto Updater Install Failed${color_NC}")  ) | tee -a -i "${str_logFile}"
+    (echo -e "${color_RED}Auto Updater Install !FAIL!${color_NC}")  ) | tee -a -i "${str_logFile}"
     # Add email alert with global admin email
     sed -ie "s/\/\/Unattended-Upgrade::Mail\ .*/Unattended-Upgrade::Mail\ \"${str_adminEmail}\"\;/" /etc/apt/apt.conf.d/50unattended-upgrades
     # Enable Auto-update
@@ -1166,17 +1174,22 @@ fun_createWebUserInfoFile(){
 
 fun_certbotInstall(){
     # Check for Let's Encrypt CertBot, if missing git it.
-    if command -v certbot &> /dev/null ; then
-        echo -e "${color_YELLOW}Let's Encrypt CertBot Already installed.${color_NC}" | tee -a -i "${str_logFile}"
+    if (dpkg-query -W certbot >/dev/null 2>&1) && (dpkg-query -W python3-certbot-apache >/dev/null 2>&1) ; then
+        # Certbot and required packages are installed.
+        echo -e "${color_GREEN}Let's Encrypt CertBot Already installed.${color_NC}" | tee -a -i "${str_logFile}"
+        return 0
     else
+        # The Certbot or required packages are not installed. So install it.
         echo -e "${color_YELLOW}Missing CertBot! Getting it now.${color_NC}" | tee -a -i "${str_logFile}"
         ( (apt-get install -yq certbot python3-certbot-apache && echo -e "${color_GREEN}CertBot Install SUCCESS${color_NC}") || \
         (echo -e "${color_RED}CertBot install !FAIL!${color_NC}")  ) | tee -a -i "${str_logFile}"
         # Confirm the install is good.
-        if command -v certbot &> /dev/null ; then
+        if (dpkg-query -W certbot >/dev/null 2>&1) && (dpkg-query -W python3-certbot-apache >/dev/null 2>&1) ; then
             echo -e "${color_GREEN}Lets Encrypt CertBot install SUCCESS${color_NC}" | tee -a -i "${str_logFile}"
+            return 0
         else
             echo -e "${color_RED}Lets Encrypt CertBot install !FAIL!${color_NC}" | tee -a -i "${str_logFile}"
+            return 1
         fi
     fi
 }
@@ -1313,11 +1326,11 @@ fun_fullInstall() {
     # Restart all newly added Services
     # Restart Apache
     ( (systemctl restart apache2.service && echo -e "${color_GREEN}Apache Start SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}Apache service restart Failed${color_NC}") ) | tee -a -i "${str_logFile}"
+    (echo -e "${color_RED}Apache service restart !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
 
     # Restart MariaDB(MySQL)
     ( (systemctl restart mariadb.service && echo -e "${color_GREEN}MariaDB Start SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}MariaDB service restart Failed${color_NC}") ) | tee -a -i "${str_logFile}"
+    (echo -e "${color_RED}MariaDB service restart !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
 
     # Finishing flare.
     fun_diamondLampLogo

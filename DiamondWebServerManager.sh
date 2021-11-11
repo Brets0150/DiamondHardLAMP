@@ -4,9 +4,9 @@
 # Last Update: 9/16/2021
 # Version: 1.0
 # Made In: Ubuntu 20.04 LTS
-# OS Tested:
-# Purpose:
-# Command Line Usage: ./addWebUserAccount.sh UserName DomainName"
+# OS Tested: Ubuntu 20.04, Ubuntu 21.04
+# Purpose: Securly build and manage a shared webhosting server.
+# Command Line Usage: ./DiamondWebServerManager.sh --help"
 ##
 # Note:
 ##
@@ -30,6 +30,32 @@ str_logFile="$(pwd)/dhl_install_log.txt"
 #######################
 #### Start Script #####
 #######################
+############################
+
+fun_helpMenu(){
+    echo -e ''
+    echo -e "   ${color_BICyan}Command Line Options ${color_NC}"
+    echo -e "     --install    = Installs all the core packages that make up a LAMP Server; Apache2, PHP,"
+    echo -e "                    PHPMyAdmin, MariaDB(MySQL). Along with the Core LAMP packages, all the "
+    echo -e "                    software needed to make the webserver security-hardened is installed. See"
+    echo -e "                    the below URL if you wish to know more details."
+    echo -e ""
+    echo -e "                     - ${color_UCyan} URL: https://cybergladius.com/diamond-hard-lamp/ ${color_NC}"
+    echo -e ''
+    echo -e "     --addwebuser = Add a new website to be hosted on the server. The new account will have a"
+    echo -e "                    few usernames & passwords created. This is required to have keep the account"
+    echo -e "                    secure. The account will have a UN+PW for .HTAccess(extra security that can"
+    echo -e "                    be added to any web DIR and is used to access the PHPMyAdmin web UI), a"
+    echo -e "                    MariaDB UN+PW and database name, and a SFTP UN+PW for file uploads. All"
+    echo -e "                    passwords are stored in the most costly hashing algorithm available, making "
+    echo -e "                    them not worthless to attackers."
+    echo -e "                    "
+    echo -e ''
+    echo -e "     --status     = Check the status and setting of the server. Helpful when troubleshooting."
+    echo -e ''
+    echo -e "                    "
+
+}
 ############################
 
 fun_checkAndImportSettings(){
@@ -150,32 +176,6 @@ fun_cgLogo(){
 }
 ############################
 
-fun_helpMenu(){
-    echo -e ''
-    echo -e "   ${color_BICyan}Command Line Options ${color_NC}"
-    echo -e "     --install    = Installs all the core packages that make up a LAMP Server; Apache2, PHP,"
-    echo -e "                    PHPMyAdmin, MariaDB(MySQL). Along with the Core LAMP packages, all the "
-    echo -e "                    software needed to make the webserver security-hardened is installed. See"
-    echo -e "                    the below URL if you wish to know more details."
-    echo -e ""
-    echo -e "                     - ${color_UCyan} URL: https://cybergladius.com/diamond-hard-lamp/ ${color_NC}"
-    echo -e ''
-    echo -e "     --addwebuser = Add a new website to be hosted on the server. The new account will have a"
-    echo -e "                    few usernames & passwords created. This is required to have keep the account"
-    echo -e "                    secure. The account will have a UN+PW for .HTAccess(extra security that can"
-    echo -e "                    be added to any web DIR and is used to access the PHPMyAdmin web UI), a"
-    echo -e "                    MariaDB UN+PW and database name, and a SFTP UN+PW for file uploads. All"
-    echo -e "                    passwords are stored in the most costly hashing algorithm available, making "
-    echo -e "                    them not worthless to attackers."
-    echo -e "                    "
-    echo -e ''
-    echo -e "     --status     = Check the status and setting of the server. Helpful when troubleshooting."
-    echo -e ''
-    echo -e "                    "
-
-}
-############################
-
 fun_falseLoadingBar(){
     # Create a fake loading bar that randomly completes.
     # Yeah, I know its pointless, but it looks cool!
@@ -198,6 +198,34 @@ fun_falseLoadingBar(){
     echo -ne "    ::${str_bar}::(100%)\r"
     echo ''
     sleep 1
+}
+############################
+
+fun_priorityCMD(){
+    # This function is to preform important commands that need confirmation the command was successful and its status logged.
+    # Usage Example: fun_priorityCMD "bash-command" "CMD-Description" "SupressPreMessages"
+    # Example: fun_priorityCMD "apt-get install -yq clamav clamav-daemon" "ClamAV Install" 0
+    # Note: Anything in the third argument passed will supress the pre-command message.
+    #
+    # Localize the vaiables and assign new names.
+    local str_cmd str_message
+    str_cmd="${1}"
+    str_message="${2}"
+    int_supressPreMessage="${3}"
+    # Lets the user know the command is running, unless supressed.
+    if [[ -z "${int_supressPreMessage}" ]]; then
+        echo -e "${color_YELLOW}${str_message} now running...${color_NC}"
+    fi
+    # Run the command
+    /bin/bash <<<"${str_cmd}"
+    # Check the commands exit-code and log its status.
+    if [[ "$?" == 0 ]] ; then
+        echo -e "${color_GREEN}${str_message} SUCCESS${color_NC}" | tee -a -i -- "${str_logFile}"
+        return 0
+    else
+        echo -e "${color_RED}${str_message} !FAIL!${color_NC}" | tee -a -i -- "${str_logFile}"
+        return 1
+    fi
 }
 ############################
 
@@ -304,16 +332,14 @@ fun_addNewAccount() {
         echo -e "${color_GREEN}SSL Engine already running${color_NC}" | tee -a -i "${str_logFile}"
     else
         echo "SSL Engine is off, turn on.."
-        ( (a2enmod ssl && echo -e "${color_GREEN}Apache SSL Mod enable SUCCESS${color_NC}") || \
-        (echo -e "${color_RED}Apache SSL Mod enable !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
+        fun_priorityCMD "a2enmod ssl" "Apache SSL Mod enable "
     fi
     # Make the ReWrite Module is enabled.
     if [ -f /etc/apache2/mods-enabled/rewrite.load ] ; then
         echo -e "${color_GREEN}ReWrite Engine already running${color_NC}" | tee -a -i "${str_logFile}"
     else
         echo "ReWrite Engine is off, Turning on.."
-        ( (a2enmod rewrite && echo -e "${color_GREEN}Apache rewrite Mod enable SUCCESS${color_NC}") || \
-        (echo -e "${color_RED}Apache rewrite Mod enable !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
+        fun_priorityCMD "a2enmod rewrite" "Apache rewrite Mod enable"
     fi
     ############################
     # Generate Self-Signed Cert for website.
@@ -364,6 +390,7 @@ fun_addNewAccount() {
             ServerName ${str_domainName}
             ServerAlias www.${str_domainName}
             SecRuleEngine On
+            SSLStrictSNIVHostCheck on
             DocumentRoot /home/${str_userName}/wwwroot/
             #<IfModule mpm_itk_module>
             #AssignUserId ${str_userName} ${str_userName}
@@ -388,13 +415,13 @@ fun_addNewAccount() {
             ErrorDocument 503 /custom_50x.html
             ErrorDocument 504 /custom_50x.html
             # enable HTTP/2, if available
-            Protocols h2 http/1.1
+            ProtocolsHonorOrder on
+            Protocols h2 h2c http/1.1
             # HTTP Strict Transport Security (mod_headers is required) (63072000 seconds)
             Header always set Strict-Transport-Security \"max-age=63072000\"
             SSLEngine on
             SSLCertificateFile /home/${str_userName}/ssl/${str_domainName}.crt
             SSLCertificateKeyFile /home/${str_userName}/ssl/${str_domainName}.key
-            SSLCertificateChainFile /home/${str_userName}/ssl/${str_domainName}.crt
             <FilesMatch \"\.(cgi|shtml|phtml|php)$\">
                 SSLOptions +StdEnvVars
             </FilesMatch>
@@ -422,12 +449,10 @@ fun_addNewAccount() {
     /home/${str_userName}/logs/${str_domainName}_error.log w,
     /home/${str_userName}/logs/${str_domainName}_modsec.log w,
     }" > "/etc/apparmor.d/apache2.d/${str_domainName}-aa"
-     # Parse and Enable the new AppArmor Config.
-    ( (apparmor_parser -r /etc/apparmor.d/usr.sbin.apache2 && echo -e "${color_GREEN}Apache's AppArmor profile enforced SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}Apache's AppArmor profile enforced !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
+    # Parse and Enable the new AppArmor Config.
+    fun_priorityCMD "apparmor_parser -r /etc/apparmor.d/usr.sbin.apache2" "Apache's AppArmor profile enforced"
     # Enable the new website config file.
-    ( ( a2ensite "${str_domainName}.conf" >/dev/null 2>&1 && echo -e "${color_GREEN}Enable new site SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}Enable new site !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
+    fun_priorityCMD "a2ensite ""${str_domainName}"".conf >/dev/null 2>&1" "Enable new site"
     ############################
     if [ "${bln_letsencrypt_support}" == true ]; then
         # Confirm CertBot is intstalled. The "fun_certbotInstall" funtion must return a code of '0' to ensure CertBot is working corretly.
@@ -437,29 +462,35 @@ fun_addNewAccount() {
         # Tell user we are genorating a new cert.
         echo -e "${color_YELLOW}Certbot now issuing a new SSL Cert...${color_NC}" | tee -a -i "${str_logFile}"
         # Create a new SSL cert with Certbot.
-        if [ ${int_certbotInstallExitCode} -eq 0 ] && (certbot certonly -n --apache --agree-tos --email "admin@${str_domainName}" -d "${str_domainName}"); then
+        if [ ${int_certbotInstallExitCode} -eq 0 ] && \
+        (certbot certonly -n --apache --rsa-key-size 4096 --staple-ocsp --agree-tos --email "admin@${str_domainName}" -d "${str_domainName}"); then
             # The Certbot exited with code 0. Cert creation good.
             echo -e "${color_GREEN}Certbot issue new SSL Cert SUCCESS${color_NC}" | tee -a -i "${str_logFile}"
-            # Change the Apache config for the site to use the new certs.
-            sed -i "s/SSLCertificateFile \/home\/${str_userName}\/ssl\/${str_domainName}.crt/SSLCertificateFile \/etc\/letsencrypt\/live\/${str_domainName}\/cert.pem/g" "${str_apacheConfigFile}"
-            sed -i "s/SSLCertificateChainFile \/home\/${str_userName}\/ssl\/${str_domainName}.crt/SSLCertificateChainFile \/etc\/letsencrypt\/live\/${str_domainName}\/fullchain.pem/g" "${str_apacheConfigFile}"
-            sed -i "s/SSLCertificateKeyFile \/home\/${str_userName}\/ssl\/${str_domainName}.key/SSLCertificateKeyFile \/etc\/letsencrypt\/live\/${str_domainName}\/privkey.pem/g" "${str_apacheConfigFile}"
+            # Link exiting self-signed cert to new LetsEncrypt Certs
+            if (/usr/bin/ln -f -s /etc/letsencrypt/live/"${str_domainName}"/fullchain.pem /home/"${str_userName}"/ssl/"${str_domainName}".crt) && \
+               (/usr/bin/ln -f -s /etc/letsencrypt/live/"${str_domainName}"/privkey.pem /home/"${str_userName}"/ssl/"${str_domainName}".key); then
+                echo -e "${color_GREEN}Install new SSL Cert SUCCESS${color_NC}" | tee -a -i "${str_logFile}"
+            else
+                echo -e "${color_RED}Install new SSL Cert !FAIL!${color_NC}" | tee -a -i "${str_logFile}"
+            fi
         else
             # There was an issue with the LetsEncrypt CertBot.
             echo -e "${color_RED}Certbot issue new SSL Cert !FAIL!${color_NC}"  | tee -a -i "${str_logFile}"
             # If fail report it and add the LetsEncrypt debug log to the DHL_Install log.
-            cat '/var/log/letsencrypt/letsencrypt.log' | tee -a -i "${str_logFile}"
+            echo -e "${color_RED}++++++++++++++++++++++++++++++++++++++${color_NC}"  | tee -a -i "${str_logFile}"
+            echo -e "${color_RED}       START LetsEncrypt Debug Log${color_NC}"  | tee -a -i "${str_logFile}"
+            echo -e "${color_RED}++++++++++++++++++++++++++++++++++++++${color_NC}"  | tee -a -i "${str_logFile}"
+            tee -a -i "${str_logFile}" < '/var/log/letsencrypt/letsencrypt.log'
+            echo -e "${color_RED}++++++++++++++++++++++++++++++++++++++${color_NC}"  | tee -a -i "${str_logFile}"
+            echo -e "${color_RED}       END LetsEncrypt Debug Log${color_NC}"  | tee -a -i "${str_logFile}"
+            echo -e "${color_RED}++++++++++++++++++++++++++++++++++++++${color_NC}"  | tee -a -i "${str_logFile}"
         fi
     else
         echo -e "${color_YELLOW}Certbot Disabled. Using self-signed cert.${color_NC}"
     fi
     ############################
     # Restart Apache
-    ( (apachectl restart >/dev/null 2>&1 && echo -e "${color_GREEN}Apache service SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}Apache service restart !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
-    #
-    ( (service ssh restart >/dev/null 2>&1 && echo -e "${color_GREEN}SSH service SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}SSH service restart !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
+    fun_priorityCMD "apachectl graceful >/dev/null 2>&1" "Apache service restart"
     ############################
     ##
     echo "====================================================="
@@ -484,28 +515,32 @@ fun_addNewAccount() {
 fun_checkSFTP() {
     # check if sftp and nobody group exist
     if grep -q "${str_webGroup}" /etc/group ; then
-            echo "web group good"
+            echo -e "${color_GREEN}Web group good${color_NC}" | tee -a -i "${str_logFile}"
         else
-            echo "group not exits. !!Web User group miss-configured!!"
+            echo -e "${color_RED}Web group does not exits. !!Web User group miss-configured!!${color_NC}" | tee -a -i "${str_logFile}"
             exit 1
         fi
     if grep -q "${str_sftpGroup}" /etc/group ; then
-            echo "sftp group good"
+            echo -e "${color_GREEN}SFTP group good.${color_NC}" | tee -a -i "${str_logFile}"
         else
-            echo "group not exits, adding"
+            echo -e "${color_YELLOW}SFTP Group does not exits, adding..${color_NC}" | tee -a -i "${str_logFile}"
             groupadd "${str_sftpGroup}"
         fi
     # SFTP user sshd config setup check
     if [ -z "$(grep "Match Group sftp" /etc/ssh/sshd_config | tr -d ' ')" ]; then
-        echo "# Added to limit User's from seeing others folders. :Added By script.
+        echo "
+        # Added to limit User's from seeing others folders. :Added By script.
         Match Group sftp
         ChrootDirectory %h
         ForceCommand internal-sftp
         AllowTcpForwarding no" >> /etc/ssh/sshd_config
+        #
         sed -i 's/Subsystem\ sftp.*.\/usr\/lib\/openssh\/sftp-server/Subsystem\ sftp\ internal-sftp/' /etc/ssh/sshd_config
-        service ssh restart
+        #
+        ( (service ssh restart >/dev/null 2>&1 && echo -e "${color_GREEN}SSH service for SFTP SUCCESS${color_NC}") || \
+        (echo -e "${color_RED}SSH service for SFTP !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
     else
-        echo "SSH/SFTP Config Found, nothing to do."
+        echo -e "${color_GREEN}SSH/SFTP Config Found, nothing to do.${color_NC}" | tee -a -i "${str_logFile}"
     fi
 }
 ############################
@@ -544,8 +579,7 @@ fun_modSecure_install() {
     # Remove any old MOd_Sec install. Ensure new install is good.
     fun_modSeccure_remove
     # Install the Mod_Sec basic packages.
-    ( (apt-get install -yq libapache2-mod-security2 && echo -e "${color_GREEN}ModSecure Install SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}ModSecurity install !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
+    fun_priorityCMD "apt-get install -yq libapache2-mod-security2" "ModSecure Install"
     #
     cp /etc/modsecurity/modsecurity.conf-recommended /etc/modsecurity/modsecurity.conf
     sed -ie "s/SecRuleEngine\ DetectionOnly/SecRuleEngine\ On/g" /etc/modsecurity/modsecurity.conf
@@ -558,8 +592,7 @@ fun_modSecure_install() {
          /etc/apache2/mods-available/security2.conf
     fi
     # Restart Apache to apply the changes.
-    ( (a2enmod headers && systemctl restart apache2.service && echo -e "${color_GREEN}ModSecure Header-Mod Install SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}ModSecurity install !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
+    fun_priorityCMD "a2enmod headers && systemctl restart apache2.service" "ModSecure Header-Mod Install"
     # Confirm the ModSecurity Module is loaded.
     if [ -z "$(apachectl -M | grep security | tr -d ' ')" ]; then
         echo -e "${color_RED}ModSec not loaded!${color_NC} "
@@ -663,8 +696,7 @@ fun_baseInstall() {
     fi
     # Edit PhpMyAdmin config to allow .htaccess file overrides.
     ln -s /etc/phpmyadmin/apache.conf /etc/apache2/conf-available/phpmyadmin.conf
-    ( (/usr/sbin/a2enconf phpmyadmin && echo -e "${color_GREEN}PHPMyAdmin Enabled in Apache SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}PHPMyAdmin Enabled in Apache !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
+    fun_priorityCMD "/usr/sbin/a2enconf phpmyadmin" "PHPMyAdmin Enabled in Apache"
     sed -i '/DirectoryIndex.*/a \ \ \ \ AllowOverride\ AuthConfig\n\ \ \ \ SecRuleEngine\ Off' /etc/apache2/conf-enabled/phpmyadmin.conf
     ############################
     # Enforce Strong passwords.
@@ -675,8 +707,8 @@ fun_baseInstall() {
 ############################
 
 fun_apacheSecConfig() {
-    ( (systemctl enable apache2 && echo -e "${color_GREEN}Apache service enabled at boot SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}!FAIL! to Enable Apache service at boot!${color_NC}") ) | tee -a -i "${str_logFile}"
+    # Enable Apache at boot time
+    fun_priorityCMD "systemctl enable apache2" "Apache service enabled at boot"
     # Custom Apache Error Pages Replace the "000-default" index file.
     echo "<h1 style='color:red'>Error 404: Not found :-(</h1>
     <p>Sorry, but I cannot find that file..  Are you sure you typed in the correct URL?</p>" > /var/www/html/custom_404.html
@@ -696,6 +728,8 @@ fun_apacheSecConfig() {
         DocumentRoot /var/www/html
         ErrorLog \${APACHE_LOG_DIR}/error.log
         CustomLog \${APACHE_LOG_DIR}/access.log combined
+        # Visitor who do not know a VitualHost name of a site hosted here are redirected to Google.com.
+        Redirect \"/\" \"https://google.com/\"
         ErrorDocument 401 /custom_404.html
         ErrorDocument 403 /custom_404.html
         ErrorDocument 404 /custom_404.html
@@ -715,31 +749,30 @@ fun_apacheSecConfig() {
     </VirtualHost>" > /etc/apache2/sites-available/000-default.conf
     # Disallow weak SSL/TLS
     sed -i 's/.*SSLProtocol*.*/\t\#/' /etc/apache2/mods-available/ssl.conf
-    sed -i '/<\/IfModule>/i \\tSSLProtocol\ all\ -SSLv3\ -TLSv1\ -TLSv1.1\ -TLSv1.2\n\tSSLHonorCipherOrder\ off\n\tSSLSessionTickets\ off\n\tSSLUseStapling\ On\n\tSSLStaplingCache\ \"shmcb:/tmp/ssl_stapling(32768)\"' /etc/apache2/mods-available/ssl.conf
+    sed -i '/<\/IfModule>/i \\tSSLProtocol\ -all\ -SSLv3\ -TLSv1\ -TLSv1.1\n\tSSLHonorCipherOrder\ off\n\tSSLSessionTickets\ off\n\tSSLUseStapling\ On\n\tSSLStaplingCache\ \"shmcb:/tmp/ssl_stapling(32768)\"' /etc/apache2/mods-available/ssl.conf
     ##
+    # Apache to give out the least details about the server.
+    echo '
+    ServerTokens Prod
+    ServerSignature Off
+    TraceEnable Off' > "/etc/apache2/conf-enabled/security.conf"
 }
 ############################
 
 fun_firewallConfig() {
     # Set the Firewall Rules
     # Allow SSH TCP 22 from any source. This should be modified.
-    ( (ufw allow ssh && echo -e "${color_GREEN}Added SSH Firewall Rule SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}Add SSH Firewall Rule !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
+    fun_priorityCMD "ufw allow ssh" "Added SSH Firewall Rule"
     # Allow 443 & 80 on IPv4&6 from any source.
-    ( (ufw allow 'Apache Full' && echo -e "${color_GREEN}Added Apache Firewall Rule SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}Add Apache Firewall Rule !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
+    fun_priorityCMD "ufw allow 'Apache Full'" "Added Apache Firewall Rule"
     # Firewall Logging enabled
-    ( (ufw logging on && echo -e "${color_GREEN}Firewall logging enabled SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}Enable Firewall logging !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
+    fun_priorityCMD "ufw logging on" "Firewall logging enabled"
     # Enable at boot
-    ( (systemctl enable ufw && echo -e "${color_GREEN}Firewall service enabled at boot SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}Enable Firewall service at boot !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
-    # Enable at boot
-    ( (systemctl start ufw && echo -e "${color_GREEN}Firewall service Started, SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}Start up the Firewall service !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
-    # Enable UFW
-    ( (echo -e "y\n" | ufw enable && echo -e "${color_GREEN}Firewall Enabled, SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}Enable Firewall !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
+    fun_priorityCMD "systemctl enable ufw" "Firewall service enabled at boot"
+    # Start Firewall Service
+    fun_priorityCMD "systemctl start ufw" "Firewall service Started"
+    # Enable UFW Firewalls Rules
+    fun_priorityCMD "echo -e 'y\n' | ufw enable" "Firewall Enabled"
 }
 ############################
 
@@ -808,43 +841,29 @@ fun_fail2banConfig() {
     chown root:root /etc/fail2ban/*.local
     chmod 644 /etc/fail2ban/*.local
     # Enable SendMail to run at boot and restart the service
-    ( (systemctl enable sendmail && systemctl start sendmail && echo -e "${color_GREEN}SendMail Start Service SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}SendMail Start Service !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
+    fun_priorityCMD "systemctl enable sendmail && systemctl start sendmail" "SendMail Start Service"
     # Enable Fail2Ban to run at boot and restart the service
-    ( (systemctl enable fail2ban && systemctl restart fail2ban && echo -e "${color_GREEN}Fail2Ban Start Service SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}Fail2Ban Start Service !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
-    ##
+    fun_priorityCMD "systemctl enable fail2ban && systemctl restart fail2ban" "Fail2Ban Start Service"
 }
 ############################
 
 fun_apparmorInstall() {
     # Install AppArmor Profiles, AppArmor Utilities, and AppArmor Apache2 Modules
-    ( (apt-get -y install apparmor-profiles apparmor-utils libapache2-mod-apparmor && echo -e "${color_GREEN}AppArmor Install SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}AppArmor Install !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
-    #
-    # Remove AppArmor
-    # apt-get remove --purge apparmor apparmor-profiles apparmor-utils libapache2-mod-apparmor
-    #
+    fun_priorityCMD "apt-get -y install apparmor-profiles apparmor-utils libapache2-mod-apparmor" "AppArmor Install"
     # Enable Apache Mods mpm_prefork, needed for AppArmor
-    ( (a2enmod mpm_prefork && echo -e "${color_GREEN}Apache Mod mpm_prefork enable SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}Apache Mod mpm_prefork enable !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
+    fun_priorityCMD "a2enmod mpm_prefork" "Apache Mod mpm_prefork enable"
     # Enable Apache Mods apparmor.
-    ( (a2enmod apparmor && echo -e "${color_GREEN}Apache Mod apparmor enable SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}Apache Mod apparmor enable !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
+    fun_priorityCMD "a2enmod apparmor" "Apache Mod apparmor enable"
     # Enable AppArmor at boot and start the service
-    ( (systemctl enable apparmor && systemctl start apparmor && echo -e "${color_GREEN}AppArmor Enabled and started SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}AppArmor Enabled and started !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
+    fun_priorityCMD "systemctl enable apparmor && systemctl start apparmor" "AppArmor Enabled and started"
     # PhpMyAdmin Install AppArmor Config
     fun_phpmyadminApparmor
     # Parse the Apache2 AppArmor profile.
-    ( (apparmor_parser -a /etc/apparmor.d/usr.sbin.apache2 && echo -e "${color_GREEN}Apache's AppArmor profile enforced SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}Apache's AppArmor profile enforced !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
+    fun_priorityCMD "apparmor_parser -a /etc/apparmor.d/usr.sbin.apache2" "Apache's AppArmor profile enforced"
     # Enforce Apache2 AppArmor profile.
-    ( (aa-enforce /etc/apparmor.d/usr.sbin.apache2 && echo -e "${color_GREEN}Apache's AppArmor profile enforced SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}Apache's AppArmor profile enforced !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
+    fun_priorityCMD "aa-enforce /etc/apparmor.d/usr.sbin.apache2" "Apache's AppArmor profile enforced"
     # Restart Apache and AppArmor to apply changes
-    ( (systemctl restart apparmor.service && systemctl restart apache2.service && echo -e "${color_GREEN}AppArmor Start Service SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}AppArmor Start Service !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
+    fun_priorityCMD "systemctl restart apparmor.service && systemctl restart apache2.service" "AppArmor Start Service"
 }
 ############################
 
@@ -884,9 +903,9 @@ fun_ossecInstall() {
     if [ -f "/etc/ossec-init.conf" ]; then
         echo -e "${color_YELLOW}OSSec Already Installed${color_NC}"
     else
+        local int_endConfigParam str_configUpdate str_ossecConfigFile str_whiteListRange str_smtpServer
         # Install required packages.
-        ( (apt-get -y install gcc make libevent-dev zlib1g-dev libssl-dev libpcre2-dev wget tar && echo -e "${color_GREEN}OSSec requirements Install SUCCESS${color_NC}") || \
-        (echo -e "${color_RED}OSSec requirements Install !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
+        fun_priorityCMD "apt-get -y install gcc make libevent-dev zlib1g-dev libssl-dev libpcre2-dev wget tar" "OSSec requirements Install"
         # Download OSSEC source code
         wget https://github.com/ossec/ossec-hids/archive/3.6.0.tar.gz -P /tmp
         # Unpack OSSEC source code
@@ -918,30 +937,21 @@ fun_ossecInstall() {
         # Run the installer script.
         /tmp/ossec-hids-3.6.0/install.sh
         # Add Rule to ignore SNAP loop drives.
-        fun_ossecConfig
+        str_ossecConfigFile='/var/ossec/rules/local_rules.xml'
+        str_configUpdate='\n\t<rule id=\"100100\" level=\"0\">\n\t\t<if_sid>531</if_sid>\n\t\t<match>cdrom|/media|usb|/mount|floppy|dvd|/dev/loop</match>\n\t\t<description>Ignoring external media & snap loop devices</description>\n\t</rule>\n'
+        int_endConfigParam="$(grep -n -- '</group>' ${str_ossecConfigFile} | awk -F: -- '{print $1}')"
+        awk -i inplace -- "NR==${int_endConfigParam}{print \"${str_configUpdate}\"}1" "${str_ossecConfigFile}"
         # Create systemctl service file.
         echo -e '[Unit]\nDescription=OSSEC service\n\n[Service]\nType=forking\nExecStart=/var/ossec/bin/ossec-control start\nExecStop=/var/ossec/bin/ossec-control stop\n\n[Install]\nWantedBy=multi-user.target\n' > /usr/lib/systemd/system/ossec.service
         # Reload the systemctl daemon so the new config is available.
-        ( (systemctl daemon-reload && echo -e "${color_GREEN}OSSEC daemon-reload SUCCESS${color_NC}") || \
-        (echo -e "${color_RED}OSSec daemon-reload !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
+        fun_priorityCMD "systemctl daemon-reload" "OSSEC daemon-reload"
         #
-        ( (systemctl enable ossec.service && echo -e "${color_GREEN}OSSEC enable at boot SUCCESS${color_NC}") || \
-        (echo -e "${color_RED}OSSec enable at boot !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
+        fun_priorityCMD "systemctl enable ossec.service" "OSSec enable at boot"
         #
-        ( (systemctl start ossec.service && echo -e "${color_GREEN}OSSEC Install SUCCESS${color_NC}") || \
-        (echo -e "${color_RED}OSSec start !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
+        fun_priorityCMD "systemctl start ossec.service" "OSSEC Service start"
         # Remove un-needed install source.
         rm -rf /tmp/3.6.0.tar.gz /tmp/ossec-hids-3.6.0
     fi
-}
-############################
-
-fun_ossecConfig(){
-    local int_endConfigParam str_configUpdate str_ossecConfigFile
-    str_ossecConfigFile='/var/ossec/rules/local_rules.xml'
-    str_configUpdate='\n\t<rule id=\"100100\" level=\"0\">\n\t\t<if_sid>531</if_sid>\n\t\t<match>cdrom|/media|usb|/mount|floppy|dvd|/dev/loop</match>\n\t\t<description>Ignoring external media & snap loop devices</description>\n\t</rule>\n'
-    int_endConfigParam="$(grep -n -- '</group>' ${str_ossecConfigFile} | awk -F: -- '{print $1}')"
-    awk -i inplace -- "NR==${int_endConfigParam}{print \"${str_configUpdate}\"}1" "${str_ossecConfigFile}"
 }
 ############################
 
@@ -984,6 +994,7 @@ fun_getNewWebUserDetails() {
             echo '----------------------------'
             echo ''
             fun_getNewWebUserDetails
+            exit 0
         else
             echo ''
             echo '----------------------------'
@@ -1009,25 +1020,76 @@ fun_getNewWebUserDetails() {
 
 fun_deleteUserAccount() {
     local str_userToRemove str_confirm
-    echo -en "Enter the username you want to${color_RED} !!COMPLETELY!! DELETE${color_NC}: "
+    echo -e -n "Enter the username you want to${color_RED} !!COMPLETELY!! DELETE${color_NC}: "
     read -r -p '' str_userToRemove
     # Remove all spaces
     str_userToRemove="${str_userToRemove//[[:blank:]]/}"
     echo '########################################'
-    echo -e "Username: ${color_YELLOW}${str_userToRemove}${color_NC}"
+    echo -e "Username: ${color_YELLOW}${str_userToRemove:?}${color_NC}"
     echo ''
     echo -e "Is this the User you want to ${color_RED}DELETE & DESTROY ALL USER DATA${color_NC}?!?!"
     echo '########################################'
     echo -en "${color_RED}y/N: ${color_NC}"
     read -r -p '' str_confirm
-    if [ "${str_confirm}" = 'y' ] && [[ ! -z "${str_userToRemove}" ]] ;then
+    # Check that the user does want to move forward and the username has been filled-in.
+    if [ "${str_confirm}" = 'y' ] && [[ ! -z "${str_userToRemove:?}" ]] ;then
         # Confirm the username really exist.
-        local str_userToRemoveCheckHash str_userToRemoveHash
+        local str_userToRemoveCheckHash str_userToRemoveHash str_domainName str_userName str_databaseName str_databaseUsername str_rootPasswd int_mysqlPassTrys
         str_userToRemoveCheckHash=$(getent passwd {1000..3000}|grep "${str_userToRemove}"|awk -F':' '{print $1}'|head -n1|md5sum|awk '{print $1}')
-        str_userToRemoveHash=$(echo "${str_userToRemove}"|md5sum|awk '{print $1}')
-        if [[ "${str_userToRemoveHash}" == "${str_userToRemoveCheckHash}" ]] ;then
+        str_userToRemoveHash=$(echo "${str_userToRemove:?}"|md5sum|awk '{print $1}')
+        # Confirm that the username given is correct and user data for the account does exist.
+        if [[ "${str_userToRemoveHash}" == "${str_userToRemoveCheckHash}" ]] && [ -f "/home/${str_userToRemove:?}/.user_info" ] ;then
+            # Pull in preset user details & internalize the variables.
+            source "/home/${str_userToRemove:?}/.user_info"
+            str_domainName="${DomainName}"
+            str_userName="${Username}"
+            str_databaseName="${DatabaseName}"
+            str_databaseUsername="${DatabaseUsername}"
+            # START  MySQL Delete User's database
+            echo -e "${color_YELLOW}Please enter ROOT user MySQL Password.${color_NC} "
+            echo -e "${color_YELLOW}This is needed to remove the user's MySQL account.${color_NC} "
+            read -s -r -p "Enter MySQL password: " str_rootPasswd
+            echo ''
+            # Number of guesses counter to break endless loops.
+            int_mysqlPassTrys=0
+            # Make sure the MySQL Password is good.
+            while ! mysql -uroot -p"${str_rootPasswd}" -e ";" ; do
+                if [[ ${int_mysqlPassTrys} -ge 9 ]]; then
+                    echo -e "${color_RED}!!TOO MANY INCORRECT PASSWORD, STOPPING SCRIPT!!${color_NC}"
+                    exit 1
+                else
+                    echo -e "${color_RED}!!That Root MySQL Password is INCORRECT!!${color_NC}"
+                    read -s -r -p "Enter Root MySQL password: " str_rootPasswd
+                    sleep 1
+                    int_mysqlPassTrys=$(( ${int_mysqlPassTrys} +1 ))
+                fi
+            done
+            #
+            if mysql -uroot -p"${str_rootPasswd}" -e ";" ; then
+                mysql --user=root --password="${str_rootPasswd}" --force -e "DROP DATABASE IF EXISTS ${str_databaseName:?};"
+                mysql --user=root --password="${str_rootPasswd}" --force -e "DROP USER IF EXISTS '${str_databaseUsername:?}'@'localhost';"
+            else
+                echo -e "${color_RED}!!That Root MySQL Password is INCORRECT!!${color_NC}"
+                echo -e "${color_RED}          !!Stopping Script!!${color_NC}"
+                exit 1
+            fi
+            # END MySQL user account creation
+            ############################
+            # Delete user & user data
             deluser "${str_userToRemove}"
             rm -rf "/home/${str_userToRemove:?}"
+            # Disable Apache site
+            fun_priorityCMD "a2dissite ${str_domainName:?}.conf" "Disable site being deleted"
+            # Delete the Apache site Config
+            str_apacheConfigToDelete="$(grep -i -r \"${str_domainName:?}\" /etc/apache2/sites-* |awk -F':' '{print $1}' | sort -u )"
+            rm -f "${str_apacheConfigToDelete:?}"
+            # Delete AppArmor Config
+            str_aaConfigToDelete="$(grep -i -r \"${str_domainName:?}\" /etc/apparmor.d/apache2.d/ |awk -F':' '{print $1}' | sort -u )"
+            rm -f "${str_aaConfigToDelete:?}"
+            # Restart Service
+            fun_priorityCMD "apparmor_parser -r /etc/apparmor.d/usr.sbin.apache2" "AppArmor service restart after site, ${str_domainName:?}, removal"
+            # Restart Apache after site removal.
+            fun_priorityCMD "systemctl restart apache2.service >/dev/null 2>&1" "Apache service restart after site, ${str_domainName:?}, removal"
         else
             echo -e "${color_RED}Operation Aborted, Username does not exist!${color_NC}"
         fi
@@ -1038,10 +1100,10 @@ fun_deleteUserAccount() {
     exit 0
 }
 ############################
+
 fun_installAutoUpdate(){
     # Install all the needed packages.
-    ( (apt-get install -yq unattended-upgrades apt-listchanges && echo -e "${color_GREEN}Auto Updater Install SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}Auto Updater Install !FAIL!${color_NC}")  ) | tee -a -i "${str_logFile}"
+    fun_priorityCMD "apt-get install -yq unattended-upgrades apt-listchanges" "Auto Updater Install"
     # Add email alert with global admin email
     sed -ie "s/\/\/Unattended-Upgrade::Mail\ .*/Unattended-Upgrade::Mail\ \"${str_adminEmail}\"\;/" /etc/apt/apt.conf.d/50unattended-upgrades
     # Enable Auto-update
@@ -1055,6 +1117,38 @@ fun_installAdvLogging(){
     # Install advanced loggin and reporting.
     echo "Install advanced loggin and reporting."
    # Email if system reboot is needed.
+}
+############################
+
+fun_installClamAV(){
+    # Install ClamAV and configure daily scanning and quarantine. OSSEC will alert when malware is discovered.
+    local str_cronFile str_quarantineDir str_clamavLog str_clamavConfigFile
+    str_cronFile='/etc/cron.d/clamdscan'
+    str_quarantineDir='/tmp/quarantine'
+    str_clamavLog='/var/log/clamav/clamdscan.log'
+    str_clamavConfigFile='/etc/clamav/clamd.conf'
+    # Install all the needed packages.
+    fun_priorityCMD "apt-get install -yq clamav clamav-daemon" "ClamAV Install"
+    # Stop the ClamAV service to do signiture updates.
+    fun_priorityCMD "systemctl stop clamav-freshclam.service" "ClamAV Service Stop"
+    # Update Signitures
+    fun_priorityCMD "/usr/bin/freshclam" "FreshClam Update"
+    # Make quarantine DIR for discovered malware.
+    /usr/bin/mkdir "${str_quarantineDir}"
+    # Make sure the quarantine DIR cannot have files within it executed. This is to make sure malware is not executed, ever.
+    /usr/bin/chmod 600 "${str_quarantineDir}"
+    # Add daily clamAV scan to cron.d.
+    echo "0 1 * * 0 root /usr/bin/clamdscan --infected --quiet --fdpass --log=${str_clamavLog} --move=${str_quarantineDir} /" > "${str_cronFile}"
+    # Add DIR to exclude from scans.
+    printf \
+    "ExcludePath ^/proc\nExcludePath ^/sys\nExcludePath ^/run\nExcludePath ^/dev\nExcludePath ^/snap\nExcludePath ^/var/lib/lxcfs/cgroup\nExcludePath ^/tmp/quarantine\n" | \
+    tee -a "${str_clamavConfigFile}"
+    # Start the ClamAV Freshclam - ClamAV virus database updater
+    fun_priorityCMD "systemctl enable clamav-freshclam.service" "ClamAV Enable at Boot"
+    fun_priorityCMD "systemctl start clamav-freshclam.service" "ClamAV Service Start"
+    # Start the Clam AntiVirus userspace daemon Service status
+    fun_priorityCMD "systemctl enable clamav-daemon.service" "ClamAV daemon Enable at Boot"
+    fun_priorityCMD "systemctl start clamav-daemon.service" "ClamAV daemon Service Start"
 }
 ############################
 
@@ -1141,14 +1235,11 @@ fun_checkForUpdates(){
 
 fun_osUpdateCommands(){
     # Update OS
-    ( (apt-get -yq update       && echo -e "${color_GREEN} APT Update SUCCESS${color_NC}")      || \
-    (echo -e "${color_RED}APT Update !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
-    #
-    ( (apt-get -yq dist-upgrade && echo -e "${color_GREEN} APT Dist-Update SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}APT Dist-Update !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
-    #
-    ( (apt-get -yq autoremove   && echo -e "${color_GREEN} APT Autoremove SUCCESS${color_NC}")  || \
-    (echo -e "${color_RED}APT Autoremove !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
+    fun_priorityCMD "apt-get -yq update" "APT Update"
+    # Upgrade the Distro
+    fun_priorityCMD "apt-get -yq dist-upgrade" "APT Dist-Update"
+    # Remove unneeded packages.
+    fun_priorityCMD "apt-get -yq autoremove" "APT Autoremove"
 }
 ############################
 
@@ -1181,8 +1272,7 @@ fun_certbotInstall(){
     else
         # The Certbot or required packages are not installed. So install it.
         echo -e "${color_YELLOW}Missing CertBot! Getting it now.${color_NC}" | tee -a -i "${str_logFile}"
-        ( (apt-get install -yq certbot python3-certbot-apache && echo -e "${color_GREEN}CertBot Install SUCCESS${color_NC}") || \
-        (echo -e "${color_RED}CertBot install !FAIL!${color_NC}")  ) | tee -a -i "${str_logFile}"
+        fun_priorityCMD "apt-get install -yq certbot python3-certbot-apache" "CertBot Install"
         # Confirm the install is good.
         if (dpkg-query -W certbot >/dev/null 2>&1) && (dpkg-query -W python3-certbot-apache >/dev/null 2>&1) ; then
             echo -e "${color_GREEN}Lets Encrypt CertBot install SUCCESS${color_NC}" | tee -a -i "${str_logFile}"
@@ -1215,22 +1305,41 @@ fun_checkInstallerRun(){
 }
 ############################
 
+ fun_installWP(){
+    # Not done, a lot to do here.
+    local str_userName
+    str_userName='cgdev4'
+    wget 'https://wordpress.org/latest.zip' -O '/tmp/wp_latest.zip'
+    unzip -o -q '/tmp/wp_latest.zip' -d '/tmp/wp_latest'
+    cp -r /tmp/wp_latest/wordpress/* /home/"${str_userName}"/wwwroot/
+    chown -R "${str_userName}":www-data /home/"${str_userName}"/wwwroot
+    chmod -R 2775 /home/"${str_userName}"/wwwroot
+    rm -f /home/"${str_userName}"/wwwroot/index.html
+    rm -rf '/tmp/wp_latest'
+ }
+############################
+
 fun_checkAllServicesStatus(){
     # AppArmor Service check.
-    ( (systemctl status apparmor.service ?>/dev/null) && echo -e "${color_GREEN}AppArmor Service Running${color_NC}") || \
-    (echo -e "${color_RED}AppArmor Service NOT Runnning${color_NC}")
+    fun_priorityCMD "(systemctl status apparmor.service) >/dev/null 2>&1" "AppArmor Service" 0
+
     # Apache2 Service check.
-    ( (systemctl status apache2.service ?>/dev/null) && echo -e "${color_GREEN}Apache Service Running${color_NC}") || \
-    (echo -e "${color_RED}Apache Service NOT Runnning${color_NC}")
+    fun_priorityCMD "(systemctl status apache2.service) >/dev/null 2>&1" "Apache Service" 0
+
     # Check MariaDB Service
-    ( (systemctl status mariadb.service ?>/dev/null) && echo -e "${color_GREEN}MariaDB Service Running${color_NC}") || \
-    (echo -e "${color_RED}MariaDB Service NOT Runnning${color_NC}")
+    fun_priorityCMD "(systemctl status mariadb.service) >/dev/null 2>&1" "MariaDB Service" 0
+
     # Check SSH/SFTP service
-    ( (systemctl status sshd.service ?>/dev/null) && echo -e "${color_GREEN}SSH/SFTP Service Running${color_NC}") || \
-    (echo -e "${color_RED}SSH/SFTP Service NOT Runnning${color_NC}")
+    fun_priorityCMD "(systemctl status sshd.service) >/dev/null 2>&1" "SSH/SFTP Service" 0
+
     # Check OSSEC Service status
-    ( (systemctl status ossec.service ?>/dev/null) && echo -e "${color_GREEN}OSSEC Service Running${color_NC}") || \
-    (echo -e "${color_RED}OSSEC Service NOT Runnning${color_NC}")
+    fun_priorityCMD "(systemctl status ossec.service) >/dev/null 2>&1" "OSSEC Service" 0
+
+    # Check Clam AntiVirus userspace daemon Service status
+    fun_priorityCMD "(systemctl status clamav-daemon.service) >/dev/null 2>&1" "Clam AntiVirus userspace daemon Service" 0
+
+    # Check ClamAV virus database updater Service status
+    fun_priorityCMD "(systemctl status clamav-freshclam.service) >/dev/null 2>&1" "ClamAV virus database updater Service" 0
     #
     # Check that the Firewall is configured correctly.
     # Port 22
@@ -1267,7 +1376,102 @@ fun_checkAllServicesStatus(){
 }
 ############################
 
+fun_perfectSSL(){
+    # Set up DH Key and strong SSL/TLS settings for the Apache mod_ssl.
+    local str_certDir str_certName
+    str_certDir='/etc/apache2/ssl'
+    str_certName='dhparam_4096.pem'
+    mkdir "${str_certDir}"
+    chmod 644 "${str_certDir}"
+    chown root:root "${str_certDir}"
+    fun_priorityCMD "/usr/bin/openssl dhparam -out \"${str_certDir}\"/\"${str_certName}\" 4096" "Generate DH Key"
+    chown -R root:root "${str_certDir}"
+    chmod 644 "${str_certDir}"
+    chmod 640 "${str_certDir}""/${str_certName}"
+    echo """
+        <IfModule mod_ssl.c>
+        SSLRandomSeed startup builtin
+        SSLRandomSeed startup file:/dev/urandom 512
+        SSLRandomSeed connect builtin
+        SSLRandomSeed connect file:/dev/urandom 512
+        AddType application/x-x509-ca-cert .crt
+        AddType application/x-pkcs7-crl .crl
+        SSLPassPhraseDialog  exec:/usr/share/apache2/ask-for-passphrase
+        SSLSessionCache shmcb:\${APACHE_RUN_DIR}/ssl_scache(512000)
+        SSLSessionCacheTimeout  300
+        # - Allow only strong TLS
+        SSLProtocol -ALL +TLSv1.2 +TLSv1.3
+        # - Disable compression, mitigate CRIME attack.
+        SSLCompression off
+        # - Deny insecure reconnects
+        SSLSessionTickets off
+        # - Try ciphers in the order listed. Try the strongest ciphers first until a compatible one is found.
+        SSLHonorCipherOrder on
+        # - Denies access if the client does not passes the host restriction or supplies a invalid user name and password.
+        SSLOptions +StrictRequire
+        # - Global DHParam key for Elliptic Curve
+        SSLOpenSSLConfCmd DHParameters ${str_certDir}/${str_certName}
+        #
+        ############
+        # Pick \"Strong & Compatible\" OR \"Perfect SSLLabs Score\"
+        ###
+        ## --- Strong & Compatible ----
+        #
+        # - Preferred Elliptic Curve
+        SSLOpenSSLConfCmd ECDHParameters prime256v1
+        #
+        # - Other accepted Elliptic Curve
+        SSLOpenSSLConfCmd Curves brainpoolP512r1:secp521r1:brainpoolP384r1:secp384r1:brainpoolP256r1:prime256v1
+        #
+        # - TLSv1.3 Settings
+        SSLCipherSuite TLSv1.3 TLS_CHACHA20_POLY1305_SHA256:TLS_AES_256_GCM_SHA384:TLS_AES_128_GCM_SHA256:TLS_AES_128_CCM_SHA256:TLS_AES_128_CCM_8_SHA256
+        #
+        # - TLSv1.2 Settings
+        SSLCipherSuite HIGH:!MEDIUM:!LOW:!aNULL:!eNULL:!RC4:!3DES:!MD5:!EXP:!PSK:!SRP:!SEED:!DSS:!CAMELLIA:!SHA:!kSRP:-kRSA
+        #
+        ####
+        ## ---- Perfect SSLLabs Score Settings ----
+        #
+        # - Preferred Elliptic Curve
+        # SSLOpenSSLConfCmd ECDHParameters brainpoolP512r1
+        #
+        # - Other accepted Elliptic Curve
+        # SSLOpenSSLConfCmd Curves brainpoolP512r1:sect571r1:secp521r1:secp384r1
+        #
+        # - TLSv1.3 Settings
+        # SSLCipherSuite TLSv1.3 TLS_CHACHA20_POLY1305_SHA256:TLS_AES_256_GCM_SHA384
+        #
+        # - TLSv1.2 Settings
+        # SSLCipherSuite TLS_CHACHA20_POLY1305_SHA256:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-CHACHA20-POLY1305:DHE-RSA-CHACHA20-POLY1305:PSK-CHACHA20-POLY1305:ECDHE-PSK-CHACHA20-POLY1305:DHE-PSK-CHACHA20-POLY1305:RSA-PSK-CHACHA20-POLY1305:DHE-RSA-AES256-GCM-SHA384:DH-RSA-AES256-GCM-SHA384:DHE-DSS-AES256-GCM-SHA384:DH-DSS-AES256-GCM-SHA384:ADH-AES256-GCM-SHA384:TLS_AES_256_GCM_SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:ECDH-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDH-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-CCM8:DHE-RSA-AES256-CCM:PSK-AES256-CCM:DHE-PSK-AES256-CCM:PSK-AES256-CCM8:DHE-PSK-AES256-CCM8:ECDHE-ECDSA-AES256-CCM:ECDHE-ECDSA-AES256-CCM8
+        #
+        ############
+        # - OCSP Stapling, only in httpd 2.3.3 and later
+        SSLUseStapling on
+        SSLStaplingResponderTimeout 5
+        SSLStaplingReturnResponderErrors off
+        SSLStaplingCache \"shmcb:logs/ssl_stapling(32768)\"
+        #
+        # - HTTP Strict Transport Security Header.
+        Header always set Strict-Transport-Security \"max-age=31536000; includeSubDomainsi; preload\"
+        #
+        # - Set a same origin policy
+        Header always set X-Frame-Options SAMEORIGIN
+        #
+        # - Rewrite any session cookies to make them more secure
+        # - Make ALL cookies created by this server are HttpOnly and Secure Header always edit Set-Cookie (.*) \"\$1;HttpOnly;Secure\"
+        Header edit Set-Cookie ^(.*)$ \$1;HttpOnly;Secure
+        #
+        #Prevent browsers doing MIME Type sniffing.
+        Header always set X-Content-Type-Options nosniff
+        </IfModule>
+    """ > /etc/apache2/mods-available/ssl.conf
+}
+############################
+
 fun_fullInstall() {
+
+    # Add the start time to the install log
+    echo "Start Install Time $(date)" | tee -a -i -- "${str_logFile}"
 
     # Check if install has already run.
     fun_checkInstallerRun
@@ -1323,14 +1527,18 @@ fun_fullInstall() {
     # Install Let's Encrypt Certbot software. For auto SSL cert managment.
     fun_certbotInstall
 
+    # Configure SSL/TLS settings to be very strong.
+    fun_perfectSSL
+
+    # Install and configure ClamAV with Daily scans.
+    fun_installClamAV
+
     # Restart all newly added Services
     # Restart Apache
-    ( (systemctl restart apache2.service && echo -e "${color_GREEN}Apache Start SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}Apache service restart !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
+    fun_priorityCMD "systemctl restart apache2.service" "Apache service restart" 0
 
     # Restart MariaDB(MySQL)
-    ( (systemctl restart mariadb.service && echo -e "${color_GREEN}MariaDB Start SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}MariaDB service restart !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
+    fun_priorityCMD "systemctl restart mariadb.service" "MariaDB service restart" 0
 
     # Finishing flare.
     fun_diamondLampLogo
@@ -1353,6 +1561,10 @@ fun_fullInstall() {
     echo -en "       |   Password:                                         |\r"
     echo "       |   Password:  ${str_webAdminPassword}"
     echo "       |=====================================================|"
+
+    # Add the end time to the install log.
+    echo "END Install Time $(date)" | tee -a -i -- "${str_logFile}"
+
 }
 ############################
 ############################
@@ -1376,6 +1588,10 @@ case "${str_command}" in
 
     --test)
         # Test
+        # fun_installClamAV
+        # fun_perfectSSL
+        # fun_installWP
+        fun_installClamAV
         ;;
 
     --addwebuser)

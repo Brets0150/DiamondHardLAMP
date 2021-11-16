@@ -19,13 +19,13 @@
 #### Get variables ####
 #######################
 # Get command passed to script.
-str_command="$1"
+str_g_command="$1"
 
 # Config file location and name.
-str_settings_file_name="$(pwd)/settings.sh"
+str_g_settings_file_name="$(pwd)/settings.sh"
 
 # This scripts log file.
-str_logFile="$(pwd)/dhl_install_log.txt"
+str_g_logFile="$(pwd)/dhl_install_log.txt"
 
 #######################
 #### Start Script #####
@@ -62,32 +62,32 @@ fun_checkAndImportSettings() {
     local str_check1 str_check2
 
     # Check if the settings file exists
-    if [ -f "${str_settings_file_name}" ]; then
+    if [ -f "${str_g_settings_file_name}" ]; then
 
         # Check if the file is empty.
-        if [[ $(cat "${str_settings_file_name}" | wc -l) -gt 10 ]]; then
+        if [[ $(cat "${str_g_settings_file_name}" | wc -l) -gt 10 ]]; then
 
             # Check if there are empty vaules in the settings file.
-            str_check1=$(wc -w <<< "$(grep '""' ${str_settings_file_name})" )
-            str_check2=$(wc -w <<< "$(grep "''" ${str_settings_file_name})" )
+            str_check1=$(wc -w <<< "$(grep '""' ${str_g_settings_file_name})" )
+            str_check2=$(wc -w <<< "$(grep "''" ${str_g_settings_file_name})" )
             if [ "${str_check1:-0}" -ne 0 ]  || [ "${str_check2:-0}" -ne 0 ] ; then
                 echo "##########################################################"
-                echo "ERROR: The ${str_settings_file_name} file has not been filled out!"
+                echo "ERROR: The ${str_g_settings_file_name} file has not been filled out!"
                 echo "##########################################################"
                 exit 1
             else
                 # All Checks passed. Load the variable file.
-                source "${str_settings_file_name}"
+                source "${str_g_settings_file_name}"
             fi
         else
             echo "##########################################################"
-            echo "ERROR: The ${str_settings_file_name} configuration file is empty! "
+            echo "ERROR: The ${str_g_settings_file_name} configuration file is empty! "
             echo "##########################################################"
             exit 1
         fi
     else
         echo "##########################################################"
-        echo "ERROR: Missing ${str_settings_file_name} configuration file!"
+        echo "ERROR: Missing ${str_g_settings_file_name} configuration file!"
         echo "##########################################################"
         exit 1
     fi
@@ -220,10 +220,10 @@ fun_priorityCMD() {
     /bin/bash <<<"${str_cmd}"
     # Check the commands exit-code and log its status.
     if [[ "$?" == 0 ]] ; then
-        echo -e "${color_GREEN}${str_message} SUCCESS${color_NC}" | tee -a -i -- "${str_logFile}"
+        echo -e "${color_GREEN}${str_message} SUCCESS${color_NC}" | tee -a -i -- "${str_g_logFile}"
         return 0
     else
-        echo -e "${color_RED}${str_message} !FAIL!${color_NC}" | tee -a -i -- "${str_logFile}"
+        echo -e "${color_RED}${str_message} !FAIL!${color_NC}" | tee -a -i -- "${str_g_logFile}"
         return 1
     fi
 }
@@ -449,30 +449,30 @@ fun_addNewAccount() {
         fun_certbotInstall
         int_certbotInstallExitCode=$?
         # Tell user we are genorating a new cert.
-        echo -e "${color_YELLOW}Certbot now issuing a new SSL Cert...${color_NC}" | tee -a -i "${str_logFile}"
+        echo -e "${color_YELLOW}Certbot now issuing a new SSL Cert...${color_NC}" | tee -a -i "${str_g_logFile}"
         # Create a new SSL cert with Certbot.
         if [ ${int_certbotInstallExitCode} -eq 0 ] && \
         (certbot certonly -n --apache --rsa-key-size 4096 --staple-ocsp --agree-tos --email "admin@${str_domainName}" -d "${str_domainName}"); then
             # The Certbot exited with code 0. Cert creation good.
-            echo -e "${color_GREEN}Certbot issue new SSL Cert SUCCESS${color_NC}" | tee -a -i "${str_logFile}"
+            echo -e "${color_GREEN}Certbot issue new SSL Cert SUCCESS${color_NC}" | tee -a -i "${str_g_logFile}"
             # Link exiting self-signed cert to new LetsEncrypt Certs
             if (/usr/bin/ln -f -s /etc/letsencrypt/live/"${str_domainName}"/fullchain.pem /home/"${str_userName}"/ssl/"${str_domainName}".crt) && \
                (/usr/bin/ln -f -s /etc/letsencrypt/live/"${str_domainName}"/privkey.pem /home/"${str_userName}"/ssl/"${str_domainName}".key); then
-                echo -e "${color_GREEN}Install new SSL Cert SUCCESS${color_NC}" | tee -a -i "${str_logFile}"
+                echo -e "${color_GREEN}Install new SSL Cert SUCCESS${color_NC}" | tee -a -i "${str_g_logFile}"
             else
-                echo -e "${color_RED}Install new SSL Cert !FAIL!${color_NC}" | tee -a -i "${str_logFile}"
+                echo -e "${color_RED}Install new SSL Cert !FAIL!${color_NC}" | tee -a -i "${str_g_logFile}"
             fi
         else
             # There was an issue with the LetsEncrypt CertBot.
-            echo -e "${color_RED}Certbot issue new SSL Cert !FAIL!${color_NC}"  | tee -a -i "${str_logFile}"
+            echo -e "${color_RED}Certbot issue new SSL Cert !FAIL!${color_NC}"  | tee -a -i "${str_g_logFile}"
             # If fail report it and add the LetsEncrypt debug log to the DHL_Install log.
-            echo -e "${color_RED}++++++++++++++++++++++++++++++++++++++${color_NC}"  | tee -a -i "${str_logFile}"
-            echo -e "${color_RED}       START LetsEncrypt Debug Log${color_NC}"  | tee -a -i "${str_logFile}"
-            echo -e "${color_RED}++++++++++++++++++++++++++++++++++++++${color_NC}"  | tee -a -i "${str_logFile}"
-            tee -a -i "${str_logFile}" < '/var/log/letsencrypt/letsencrypt.log'
-            echo -e "${color_RED}++++++++++++++++++++++++++++++++++++++${color_NC}"  | tee -a -i "${str_logFile}"
-            echo -e "${color_RED}       END LetsEncrypt Debug Log${color_NC}"  | tee -a -i "${str_logFile}"
-            echo -e "${color_RED}++++++++++++++++++++++++++++++++++++++${color_NC}"  | tee -a -i "${str_logFile}"
+            echo -e "${color_RED}++++++++++++++++++++++++++++++++++++++${color_NC}"  | tee -a -i "${str_g_logFile}"
+            echo -e "${color_RED}       START LetsEncrypt Debug Log${color_NC}"  | tee -a -i "${str_g_logFile}"
+            echo -e "${color_RED}++++++++++++++++++++++++++++++++++++++${color_NC}"  | tee -a -i "${str_g_logFile}"
+            tee -a -i "${str_g_logFile}" < '/var/log/letsencrypt/letsencrypt.log'
+            echo -e "${color_RED}++++++++++++++++++++++++++++++++++++++${color_NC}"  | tee -a -i "${str_g_logFile}"
+            echo -e "${color_RED}       END LetsEncrypt Debug Log${color_NC}"  | tee -a -i "${str_g_logFile}"
+            echo -e "${color_RED}++++++++++++++++++++++++++++++++++++++${color_NC}"  | tee -a -i "${str_g_logFile}"
         fi
     else
         echo -e "${color_YELLOW}Certbot Disabled. Using self-signed cert.${color_NC}"
@@ -504,9 +504,9 @@ fun_addNewAccount() {
 fun_checkSFTP() {
     # Check if sftp group exist
     if grep -q "${str_g_sftpGroup}" /etc/group ; then
-            echo -e "${color_GREEN}SFTP group good.${color_NC}" | tee -a -i "${str_logFile}"
+            echo -e "${color_GREEN}SFTP group good.${color_NC}" | tee -a -i "${str_g_logFile}"
         else
-            echo -e "${color_YELLOW}SFTP Group does not exits, adding..${color_NC}" | tee -a -i "${str_logFile}"
+            echo -e "${color_YELLOW}SFTP Group does not exits, adding..${color_NC}" | tee -a -i "${str_g_logFile}"
             groupadd "${str_g_sftpGroup}"
         fi
     # SFTP user sshd config setup check
@@ -522,7 +522,7 @@ fun_checkSFTP() {
         #
         fun_priorityCMD "service ssh restart >/dev/null 2>&1" "SSH service for SFTP"
     else
-        echo -e "${color_GREEN}SSH/SFTP Config Found, nothing to do.${color_NC}" | tee -a -i "${str_logFile}"
+        echo -e "${color_GREEN}SSH/SFTP Config Found, nothing to do.${color_NC}" | tee -a -i "${str_g_logFile}"
     fi
 }
 ############################
@@ -579,7 +579,7 @@ fun_baseInstall() {
     export DEBIAN_FRONTEND=noninteractive
     ( (apt-get install -yq phpmyadmin mariadb-server apache2 php git unzip htop atop bash-completion libpam-pwquality bc libapache2-mpm-itk && \
         echo -e "${color_GREEN}Base Packaged Install SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}Core Software Install !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
+    (echo -e "${color_RED}Core Software Install !FAIL!${color_NC}") ) | tee -a -i "${str_g_logFile}"
     ############################
     ######## MySQL Set Up ######
     # These are the key commands run in "mysql_secure_installation". I have distilled that script to the below, making automation better..
@@ -610,17 +610,17 @@ fun_baseInstall() {
     if ! /usr/bin/mariadb --user=root -e ';' ; then
         # Root Mysql User password is set, not empty, or no-pw root login disabled(This is good).
         local str_currentMysqlRootPw
-        echo -e "${color_GREEN}No-password MySQL-root login at console already disabled.${color_NC}" | tee -a -i "${str_logFile}"
+        echo -e "${color_GREEN}No-password MySQL-root login at console already disabled.${color_NC}" | tee -a -i "${str_g_logFile}"
         # Get the MySQL root user password from the user. Do this untill the correct password is given. The User must break-opt if they do not have PW.
         until /usr/bin/mariadb --user=root --password="${str_currentMysqlRootPw}" -e ';'; do
-            echo -e "${color_YELLOW}--MySQL password not blank--${color_NC} " | tee -a -i "${str_logFile}"
+            echo -e "${color_YELLOW}--MySQL password not blank--${color_NC} " | tee -a -i "${str_g_logFile}"
             read -r -s -p "Enter the current MySQL Root Password: " str_currentMysqlRootPw
         done
         # Configure the MariaDB Server, same key commands run in "mysql_secure_installation"
         /usr/bin/mariadb --force --verbose --user=root --password="${str_currentMysqlRootPw}" -e "${str_mysqlSecSetupScript}"
     else
         # Root Mysql console no-password root login was allowed. Disabiling this.
-        echo -e "${color_RED}Disabling console no-password root login${color_NC}" | tee -a -i "${str_logFile}"
+        echo -e "${color_RED}Disabling console no-password root login${color_NC}" | tee -a -i "${str_g_logFile}"
         # Configure the MariaDB Server, same key commands run in "mysql_secure_installation"
         # add --silent after debug
         /usr/bin/mariadb --force --verbose --user=root -e "${str_mysqlSecSetupScript}"
@@ -628,9 +628,9 @@ fun_baseInstall() {
     ############################
     # Test if the final password works.
     if ! /usr/bin/mariadb --user=root --password="${str_clearTextMysqlRootPW}" -e ';'; then
-        echo -e "${color_RED}!!That Root MySQL Password is INCORRECT!!${color_NC} " | tee -a -i "${str_logFile}"
+        echo -e "${color_RED}!!That Root MySQL Password is INCORRECT!!${color_NC} " | tee -a -i "${str_g_logFile}"
     else
-        echo -e "${color_GREEN}Root MySQL Password test is GOOD!${color_NC}" | tee -a -i "${str_logFile}"
+        echo -e "${color_GREEN}Root MySQL Password test is GOOD!${color_NC}" | tee -a -i "${str_g_logFile}"
     fi
     #### END MySQL Set Up ######
     ############################
@@ -738,7 +738,7 @@ fun_firewallConfig() {
 
 fun_fail2banConfig() {
     ( (apt-get install -yq fail2ban sendmail sendmail-bin git && echo -e "${color_GREEN}Fail2Ban Install SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}Fail2Ban or SendMail Install !FAIL!${color_NC}")  ) | tee -a -i "${str_logFile}"
+    (echo -e "${color_RED}Fail2Ban or SendMail Install !FAIL!${color_NC}")  ) | tee -a -i "${str_g_logFile}"
     # Fail2Ban Config
     echo -e "[DEFAULT]\ndbpurgeage = 30d" > /etc/fail2ban/fail2ban.local
     #
@@ -1180,7 +1180,7 @@ fun_fixHostname() {
             fun_fixHostname
         fi
     else
-        echo -e "${color_GREEN}Hostname and FQDN set correctly.${color_NC}"  | tee -a -i "${str_logFile}"
+        echo -e "${color_GREEN}Hostname and FQDN set correctly.${color_NC}"  | tee -a -i "${str_g_logFile}"
     fi
 }
 ############################
@@ -1214,7 +1214,7 @@ fun_checkForUpdates() {
         if [[ "${int_daysSinceLattUpdate}" -gt "0" ]]; then
             fun_osUpdateCommands
         else
-            echo -e "${color_GREEN}OS Already Up to date..${color_NC}" | tee -a -i "${str_logFile}"
+            echo -e "${color_GREEN}OS Already Up to date..${color_NC}" | tee -a -i "${str_g_logFile}"
         fi
     else
         # System Never updated, running..
@@ -1258,18 +1258,18 @@ fun_certbotInstall() {
     # Check for Let's Encrypt CertBot, if missing git it.
     if (dpkg-query -W certbot >/dev/null 2>&1) && (dpkg-query -W python3-certbot-apache >/dev/null 2>&1) ; then
         # Certbot and required packages are installed.
-        echo -e "${color_GREEN}Let's Encrypt CertBot Already installed.${color_NC}" | tee -a -i "${str_logFile}"
+        echo -e "${color_GREEN}Let's Encrypt CertBot Already installed.${color_NC}" | tee -a -i "${str_g_logFile}"
         return 0
     else
         # The Certbot or required packages are not installed. So install it.
-        echo -e "${color_YELLOW}Missing CertBot! Getting it now.${color_NC}" | tee -a -i "${str_logFile}"
+        echo -e "${color_YELLOW}Missing CertBot! Getting it now.${color_NC}" | tee -a -i "${str_g_logFile}"
         fun_priorityCMD "apt-get install -yq certbot python3-certbot-apache" "CertBot Install"
         # Confirm the install is good.
         if (dpkg-query -W certbot >/dev/null 2>&1) && (dpkg-query -W python3-certbot-apache >/dev/null 2>&1) ; then
-            echo -e "${color_GREEN}Lets Encrypt CertBot install SUCCESS${color_NC}" | tee -a -i "${str_logFile}"
+            echo -e "${color_GREEN}Lets Encrypt CertBot install SUCCESS${color_NC}" | tee -a -i "${str_g_logFile}"
             return 0
         else
-            echo -e "${color_RED}Lets Encrypt CertBot install !FAIL!${color_NC}" | tee -a -i "${str_logFile}"
+            echo -e "${color_RED}Lets Encrypt CertBot install !FAIL!${color_NC}" | tee -a -i "${str_g_logFile}"
             return 1
         fi
     fi
@@ -1285,12 +1285,12 @@ fun_checkInstallerRun() {
         echo -e "${color_YELLOW}Are you sure you want to continue?${color_NC}"
         read -r -p 'y/N?  :' str_confirm
         if [ "${str_confirm}" != 'y' ]; then
-            echo -e "${color_RED}User aborted the install${color_NC}" | tee -i -a "${str_logFile}"
+            echo -e "${color_RED}User aborted the install${color_NC}" | tee -i -a "${str_g_logFile}"
             exit 1
         fi
     else
         # The file does not exist.
-        echo -e "${color_GREEN}Looks like the installer has not already been run, good to proceed.${color_NC}" | tee -i -a "${str_logFile}"
+        echo -e "${color_GREEN}Looks like the installer has not already been run, good to proceed.${color_NC}" | tee -i -a "${str_g_logFile}"
         touch "$(pwd)/.installer_ran"
     fi
 }
@@ -1449,11 +1449,11 @@ fun_perfectSSL() {
 fun_checkForInstallErrors() {
     # This function checks for error. Error can be noted in install log if a command run with "fun_priorityCMD" fails.
     # Other erro may occur, but only command run with "fun_priorityCMD" will generate '!FAIL!' message in the log.
-    if [[ $(grep -c '!FAIL!' "${str_logFile}") -gt 0 ]]; then
+    if [[ $(grep -c '!FAIL!' "${str_g_logFile}") -gt 0 ]]; then
         echo -e "${color_BIRed} Errors during install occured. Please review the log.${color_NC}"
         echo -e "${color_RED} Errors listed below.${color_NC}"
         echo -e "${color_BIRed}--------------------------------${color_NC}"
-        grep '!FAIL!' "${str_logFile}"
+        grep '!FAIL!' "${str_g_logFile}"
         echo -e "${color_BIRed}--------------------------------${color_NC}"
     else
         echo -e "${color_BGreen} NO Errors during install occured.${color_NC}"
@@ -1466,7 +1466,7 @@ fun_configApacheModules() {
 
     # Make sure Apache SSL model is enabled
     if [ -f "/etc/apache2/mods-enabled/ssl.load" ] && [ -f "/etc/apache2/mods-enabled/ssl.conf" ] ; then
-        echo -e "${color_GREEN}SSL Engine already running${color_NC}" | tee -a -i "${str_logFile}"
+        echo -e "${color_GREEN}SSL Engine already running${color_NC}" | tee -a -i "${str_g_logFile}"
     else
         echo "SSL Engine is off, turn on.."
         fun_priorityCMD "a2enmod ssl" "Apache SSL Mod enable "
@@ -1474,7 +1474,7 @@ fun_configApacheModules() {
 
     # Make the ReWrite Module is enabled.
     if [ -f /etc/apache2/mods-enabled/rewrite.load ] ; then
-        echo -e "${color_GREEN}ReWrite Engine already running${color_NC}" | tee -a -i "${str_logFile}"
+        echo -e "${color_GREEN}ReWrite Engine already running${color_NC}" | tee -a -i "${str_g_logFile}"
     else
         echo "ReWrite Engine is off, Turning on.."
         fun_priorityCMD "a2enmod rewrite" "Apache rewrite Mod enable"
@@ -1482,7 +1482,7 @@ fun_configApacheModules() {
 
     # Make the libapache2-mpm-itk Module is enabled.
     if [ -f /etc/apache2/mods-enabled/mpm_itk.load ] ; then
-        echo -e "${color_GREEN}Multi-Processing Module already running${color_NC}" | tee -a -i "${str_logFile}"
+        echo -e "${color_GREEN}Multi-Processing Module already running${color_NC}" | tee -a -i "${str_g_logFile}"
     else
         echo "Multi-Processing Module is off, Turning on.."
         fun_priorityCMD "a2enmod mpm_itk" "Multi-Processing Module enable"
@@ -1490,7 +1490,7 @@ fun_configApacheModules() {
 
     # Make the Headers Module is enabled.
     if [ -f /etc/apache2/mods-enabled/headers.load ] ; then
-        echo -e "${color_GREEN}Headers Module already running${color_NC}" | tee -a -i "${str_logFile}"
+        echo -e "${color_GREEN}Headers Module already running${color_NC}" | tee -a -i "${str_g_logFile}"
     else
         echo "Headers Module is off, Turning on.."
         fun_priorityCMD "a2enmod headers" "Header-Mod enabled"
@@ -1502,7 +1502,7 @@ fun_configApacheModules() {
 fun_fullInstall() {
 
     # Add the start time to the install log
-    echo "Start Install Time $(date)" | tee -a -i -- "${str_logFile}"
+    echo "Start Install Time $(date)" | tee -a -i -- "${str_g_logFile}"
 
     # Check if install has already run.
     fun_checkInstallerRun
@@ -1591,7 +1591,7 @@ fun_fullInstall() {
     echo "       |=====================================================|"
 
     # Add the end time to the install log.
-    echo "END Install Time $(date)" | tee -a -i -- "${str_logFile}"
+    echo "END Install Time $(date)" | tee -a -i -- "${str_g_logFile}"
 
 }
 ############################
@@ -1608,7 +1608,7 @@ fun_checkAndImportSettings
 #
 ############################
 ############################
-case "${str_command}" in
+case "${str_g_command}" in
 
     --install)
         fun_fullInstall

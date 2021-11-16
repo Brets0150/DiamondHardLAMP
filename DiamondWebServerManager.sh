@@ -253,8 +253,8 @@ fun_addNewAccount() {
     str_clearTextSftpPW="$(fun_newPasswordGen)"
     str_encryptedPW="$(perl -e 'print crypt($ARGV[0], "password")' ${str_clearTextSftpPW})"
     (useradd -m -p "${str_encryptedPW}" "${str_userName}") >/dev/null 2>&1
-    # usermod -a -G "${str_webGroup}" "${str_userName}"
-    usermod -a -G "${str_sftpGroup}" "${str_userName}"
+    # usermod -a -G "${str_g_webGroup}" "${str_userName}"
+    usermod -a -G "${str_g_sftpGroup}" "${str_userName}"
     usermod -s /bin/false "${str_userName}"
     chown -R root. "/home/${str_userName}" && chmod -R 755 "/home/${str_userName}"
     rm -fr "/home/${str_userName:?}/*"
@@ -275,12 +275,12 @@ fun_addNewAccount() {
     ## Add user .htaccess rights to MySQL Web Tool like phpmyadmin or Adminer.
     if [ -f "/home/${str_userName}/.secret/.htpasswd" ] ; then
         (htpasswd -B -C 10 -b "/home/${str_userName}/.secret/.htpasswd" "${str_userName}" "${str_clearTextWebPW}") >/dev/null 2>&1
-        (htpasswd -B -C 10 -b "${str_apache2Dir}.secret/.htpasswd" "${str_userName}" "${str_clearTextWebPW}") >/dev/null 2>&1
+        (htpasswd -B -C 10 -b "${str_g_apache2Dir}.secret/.htpasswd" "${str_userName}" "${str_clearTextWebPW}") >/dev/null 2>&1
     else
         mkdir "/home/${str_userName}/.secret"
         chmod 755 "/home/${str_userName}/.secret"
         (htpasswd -B -C 10 -c -b "/home/${str_userName}/.secret/.htpasswd" "${str_userName}" "${str_clearTextWebPW}") >/dev/null 2>&1
-        (htpasswd -B -C 10 -b "${str_apache2Dir}.secret/.htpasswd" "${str_userName}" "${str_clearTextWebPW}") >/dev/null 2>&1
+        (htpasswd -B -C 10 -b "${str_g_apache2Dir}.secret/.htpasswd" "${str_userName}" "${str_clearTextWebPW}") >/dev/null 2>&1
         chmod 644 "/home/${str_userName}/.secret/.htpasswd"
         # May need to add chown to htaccess
     fi
@@ -315,9 +315,9 @@ fun_addNewAccount() {
     done
     #
     if mysql -uroot -p"${str_rootPasswd}"  -e ";" ; then
-        mysql -u"${str_mysqlRootUser}" -p"${str_rootPasswd}" -e "CREATE DATABASE ${str_databaseName} /*\!40100 DEFAULT CHARACTER SET utf8 */;"
-        mysql -u"${str_mysqlRootUser}" -p"${str_rootPasswd}" -e "CREATE USER ${str_mysqlUserName}@localhost IDENTIFIED BY '${str_clearTextMysqlPW}';"
-        mysql -u"${str_mysqlRootUser}" -p"${str_rootPasswd}" -e "GRANT ALL PRIVILEGES ON ${str_databaseName}.* TO '${str_mysqlUserName}'@'localhost';"
+        mysql -u"${str_g_mysqlRootUser}" -p"${str_rootPasswd}" -e "CREATE DATABASE ${str_databaseName} /*\!40100 DEFAULT CHARACTER SET utf8 */;"
+        mysql -u"${str_g_mysqlRootUser}" -p"${str_rootPasswd}" -e "CREATE USER ${str_mysqlUserName}@localhost IDENTIFIED BY '${str_clearTextMysqlPW}';"
+        mysql -u"${str_g_mysqlRootUser}" -p"${str_rootPasswd}" -e "GRANT ALL PRIVILEGES ON ${str_databaseName}.* TO '${str_mysqlUserName}'@'localhost';"
     else
         echo -e "${color_RED}!!That Root MySQL Password is INCORRECT!!${color_NC}"
         echo -e "${color_RED}          !!Stopping Script!!${color_NC}"
@@ -335,11 +335,11 @@ fun_addNewAccount() {
     (openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
     -keyout "/home/${str_userName}/ssl/${str_domainName}.key" \
     -out "/home/${str_userName}/ssl/${str_domainName}.crt" \
-    -subj "/C=${str_country}/ST=${str_state}/L=${str_locality}/O=${str_organization}/OU=${str_organizationalunit}/CN=${str_domainName}/emailAddress=${str_certEmail}") >/dev/null 2>&1
+    -subj "/C=${str_g_country}/ST=${str_g_state}/L=${str_g_locality}/O=${str_domainName}/OU=${str_g_organizationalunit}/CN=${str_domainName}/emailAddress=admin@${str_domainName}") >/dev/null 2>&1
     ############################
     # Start create apache config file with self signed cert. Needed to make good cert
     local str_apacheConfigFile
-    str_apacheConfigFile="${str_apache2Dir}sites-available/${str_domainName}.conf"
+    str_apacheConfigFile="${str_g_apache2Dir}sites-available/${str_domainName}.conf"
     touch "${str_apacheConfigFile}"
     # Create a Custom 404 Error pages
     echo "<h1 style='color:red'>Error 404: Not found :-(</h1>
@@ -443,7 +443,7 @@ fun_addNewAccount() {
     # Enable the new website config file.
     fun_priorityCMD "a2ensite ""${str_domainName}"".conf >/dev/null 2>&1" "Enable new site"
     ############################
-    if [ "${bln_letsencrypt_support}" == true ]; then
+    if [ "${bln_g_letsencrypt_support}" == true ]; then
         # Confirm CertBot is intstalled. The "fun_certbotInstall" funtion must return a code of '0' to ensure CertBot is working corretly.
         local int_certbotInstallExitCode
         fun_certbotInstall
@@ -485,7 +485,7 @@ fun_addNewAccount() {
     echo "====================================================="
     echo "                    SFTP Login"
     echo "    Host:  $(hostname -f)"
-    echo "    Port:  ${str_port}"
+    echo "    Port:  ${str_g_port}"
     echo "UserName:  ${str_userName}"
     echo "Password:  ${str_clearTextSftpPW}"
     echo "====================================================="
@@ -503,11 +503,11 @@ fun_addNewAccount() {
 
 fun_checkSFTP() {
     # Check if sftp group exist
-    if grep -q "${str_sftpGroup}" /etc/group ; then
+    if grep -q "${str_g_sftpGroup}" /etc/group ; then
             echo -e "${color_GREEN}SFTP group good.${color_NC}" | tee -a -i "${str_logFile}"
         else
             echo -e "${color_YELLOW}SFTP Group does not exits, adding..${color_NC}" | tee -a -i "${str_logFile}"
-            groupadd "${str_sftpGroup}"
+            groupadd "${str_g_sftpGroup}"
         fi
     # SFTP user sshd config setup check
     if [ -z "$(grep "Match Group sftp" /etc/ssh/sshd_config | tr -d ' ')" ]; then
@@ -541,21 +541,6 @@ fun_newPasswordGen() {
 }
 ############################
 
-fun_postfixConfig() {
-    #Check if POSTFIX is installed
-    if [ -z "$(find /etc/ -name 'postfix')" ]; then
-        apt-get -y install postfix
-        echo "relayhost = ${str_emailRelaySever}" >> "${str_postfixConfigFile}"
-    else
-        if [ -z "$(cat ${str_postfixConfigFile} | grep 'relayhost = *.*' | awk '{print $3}' |tr -d ' ' |tr -d '\n')" ]; then
-            echo "relayhost = ${str_emailRelaySever}" >> "${str_postfixConfigFile}"
-        fi
-    fi
-    service postfix restart
-    # END POSTFIX Check
-}
-############################
-
 fun_modSecure_install() {
     # Mod_Secure config
     # Remove any old MOd_Sec install. Ensure new install is good.
@@ -567,7 +552,7 @@ fun_modSecure_install() {
     sed -ie "s/SecRuleEngine\ DetectionOnly/SecRuleEngine\ On/g" /etc/modsecurity/modsecurity.conf
     # Rule For ModSecurity Config
     rm -rf /usr/share/modsecurity-crs
-    git clone "${str_modsecGitUrl}" /usr/share/modsecurity-crs
+    git clone "${str_g_modsecGitUrl}" /usr/share/modsecurity-crs
     cp /usr/share/modsecurity-crs/crs-setup.conf.example /usr/share/modsecurity-crs/crs-setup.conf
     if [ -z "$(grep "IncludeOptional /usr/share/modsecurity-crs/*.conf" /etc/apache2/mods-available/security2.conf | tr -d ' ')" ]; then
         sed -ie "s/<\/IfModule>/\\tIncludeOptional\ \/usr\/share\/modsecurity-crs\/*.conf\n\tIncludeOptional \/usr\/share\/modsecurity-crs\/rules\/*.conf\\n\<\/IfModule\>/g"\
@@ -652,21 +637,21 @@ fun_baseInstall() {
     # PhpMyAdmin .htaccess setup.
     echo -e "AuthType Basic\n"\
     "AuthName 'Enter you UserName & Password.'\n"\
-    "AuthUserFile ${str_apache2Dir}.secret/.htpasswd\n"\
-    "Require valid-user\n" > "${str_webMysqlToolWebDir}.htaccess"
+    "AuthUserFile ${str_g_apache2Dir}.secret/.htpasswd\n"\
+    "Require valid-user\n" > "${str_g_webMysqlToolWebDir}.htaccess"
     ############################
     #
     ## Add user .htaccess rights to MySQL Web Tool like phpmyadmin.
     # phpMyAdmin -- /usr/share/phpmyadmin/
     #
-    if [ -f "${str_apache2Dir}.secret/.htpasswd" ] ; then
-        htpasswd -B -C 10 -b "${str_apache2Dir}.secret/.htpasswd" "${str_webAdminUsername}" "${str_webAdminPassword}"
+    if [ -f "${str_g_apache2Dir}.secret/.htpasswd" ] ; then
+        htpasswd -B -C 10 -b "${str_g_apache2Dir}.secret/.htpasswd" "${str_webAdminUsername}" "${str_webAdminPassword}"
     else
-        mkdir "${str_apache2Dir}.secret"
-        chmod 755 "${str_apache2Dir}.secret"
-        htpasswd -B -C 10 -c -b "${str_apache2Dir}.secret/.htpasswd" "${str_webAdminUsername}" "${str_webAdminPassword}"
-        chmod 644 "${str_apache2Dir}.secret/.htpasswd"
-        chown root:root "${str_apache2Dir}.secret/.htpasswd"
+        mkdir "${str_g_apache2Dir}.secret"
+        chmod 755 "${str_g_apache2Dir}.secret"
+        htpasswd -B -C 10 -c -b "${str_g_apache2Dir}.secret/.htpasswd" "${str_webAdminUsername}" "${str_webAdminPassword}"
+        chmod 644 "${str_g_apache2Dir}.secret/.htpasswd"
+        chown root:root "${str_g_apache2Dir}.secret/.htpasswd"
     fi
     # Edit PhpMyAdmin config to allow .htaccess file overrides.
     ln -s /etc/phpmyadmin/apache.conf /etc/apache2/conf-available/phpmyadmin.conf
@@ -768,7 +753,7 @@ fun_fail2banConfig() {
     maxretry = 4
     backend = auto
     usedns = warn
-    destemail = ${str_adminEmail}
+    destemail = ${str_g_adminEmail}
     sendername = $(hostname)_Fail2Ban@$(hostname -d)
     banaction = iptables-multiport
     mta = sendmail
@@ -879,7 +864,6 @@ fun_apacheApparmorConfig() {
     echo '
     # Last Modified: Mon Nov 15 14:46:06 2021
     #include <tunables/global>
-    # Author: Marc Deslauriers <marc.deslauriers@ubuntu.com>
     profile apache2 /usr/{bin,sbin}/apache2 flags=(attach_disconnected) {
     #include <abstractions/base>
     #include <abstractions/nameservice>
@@ -924,11 +908,11 @@ fun_ossecInstall() {
         # Download OSSEC source code
         # Old method. Not working in Ubuntu 21.04, so switched to latest Git versions
         # wget https://github.com/ossec/ossec-hids/archive/3.6.0.tar.gz -P /tmp
-        git clone https://github.com/ossec/ossec-hids.git /tmp/ossec-hids-3.6.0
+        git clone "${str_g_ossecGitUrl}" /tmp/ossec-hids-3.6.0
         # Unpack OSSEC source code -  not needed with GIT method.
         # tar xzf /tmp/3.6.0.tar.gz -C /tmp/
         # Get the SMTP server used for the admin email address set from the "Settings.sh" file.
-        str_smtpServer="$(echo ${str_adminEmail}|awk -F'@' -- '{print $2}'|xargs -I[] dig +short [] MX |awk -F' ' '{print $2}')"
+        str_smtpServer="$(echo ${str_g_adminEmail}|awk -F'@' -- '{print $2}'|xargs -I[] dig +short [] MX |awk -F' ' '{print $2}')"
         # Get WhiteList IPs from this server and subnet.
         str_whiteListRange="$(ip a|grep 'inet '|grep -v '127.'|awk -F' ' '{print $2}')"
         # build the OSSEC config file, so no user interaction is needed.
@@ -945,7 +929,7 @@ fun_ossecInstall() {
             "USER_UPDATE_RULES=\"y\"\n" \
             "USER_BINARYINSTALL=\"x\"\n" \
             "USER_ENABLE_EMAIL=\"y\"\n" \
-            "USER_EMAIL_ADDRESS=\"${str_adminEmail}\"\n" \
+            "USER_EMAIL_ADDRESS=\"${str_g_adminEmail}\"\n" \
             "USER_EMAIL_SMTP=\"${str_smtpServer::-1}\"\n" \
             "USER_ENABLE_SYSLOG=\"y\"\n" \
             "USER_ENABLE_FIREWALL_RESPONSE=\"y\"\n" \
@@ -972,11 +956,6 @@ fun_ossecInstall() {
 }
 ############################
 
-fun_postfixInstall() {
-    echo 'TO-DO'
-}
-############################
-
 fun_getNewWebUserDetails() {
     # Get the new web account details that are needed for set up
     local str_domainName str_userName str_confirm
@@ -985,7 +964,7 @@ fun_getNewWebUserDetails() {
     echo -en "Input the ${color_YELLOW}Username${color_NC} for the Web User to be added: "
     read -r -p "" str_userName
     # Check DNS if Let's Encrypt CertBot enabled. DNS MUST BE TO THIS SERVER for CertBot to work.
-    if [ "${bln_letsencrypt_support}" == true ]; then
+    if [ "${bln_g_letsencrypt_support}" == true ]; then
         local str_dnsCheck str_confirm_dns
         str_dnsCheck="$(dig @1.1.1.1 +short ${str_domainName})"
         echo '############################'
@@ -1122,7 +1101,7 @@ fun_installAutoUpdate() {
     # Install all the needed packages.
     fun_priorityCMD "apt-get install -yq unattended-upgrades apt-listchanges" "Auto Updater Install"
     # Add email alert with global admin email
-    sed -ie "s/\/\/Unattended-Upgrade::Mail\ .*/Unattended-Upgrade::Mail\ \"${str_adminEmail}\"\;/" /etc/apt/apt.conf.d/50unattended-upgrades
+    sed -ie "s/\/\/Unattended-Upgrade::Mail\ .*/Unattended-Upgrade::Mail\ \"${str_g_adminEmail}\"\;/" /etc/apt/apt.conf.d/50unattended-upgrades
     # Enable Auto-update
     echo -e 'APT::Periodic::Update-Package-Lists "1";\nAPT::Periodic::Unattended-Upgrade "1";' > /etc/apt/apt.conf.d/20auto-upgrades
     echo unattended-upgrades unattended-upgrades/enable_auto_updates boolean true | debconf-set-selections
@@ -1561,14 +1540,8 @@ fun_fullInstall() {
     #  Install and config Fail2Ban
     fun_fail2banConfig
 
-    # Email Forwaring Config
-    fun_postfixInstall
-
     # AppArmor Install and Config
     fun_apparmorInstall
-
-    # Install advanced logging and alerting.
-    fun_installAdvLogging
 
     # Config Firewall basic settings SSH and Apache Only
     fun_firewallConfig

@@ -14,7 +14,7 @@
 # 1.0 - Done main purpose of script. Sites working well no known issues.
 ##
 # Issues to Fix
-# 1. Check if cron job exists for cert renewal "/etc/apache2/certbot/letsencrypt-auto renew"
+#
 #######################
 #### Get variables ####
 #######################
@@ -22,7 +22,7 @@
 str_command="$1"
 
 # Config file location and name.
-str_settings_file_name="./settings_mine.sh"
+str_settings_file_name="$(pwd)/settings.sh"
 
 # This scripts log file.
 str_logFile="$(pwd)/dhl_install_log.txt"
@@ -32,7 +32,7 @@ str_logFile="$(pwd)/dhl_install_log.txt"
 #######################
 ############################
 
-fun_helpMenu(){
+fun_helpMenu() {
     echo -e ''
     echo -e "   ${color_BICyan}Command Line Options ${color_NC}"
     echo -e "     --install    = Installs all the core packages that make up a LAMP Server; Apache2, PHP,"
@@ -58,7 +58,7 @@ fun_helpMenu(){
 }
 ############################
 
-fun_checkAndImportSettings(){
+fun_checkAndImportSettings() {
     local str_check1 str_check2
 
     # Check if the settings file exists
@@ -94,7 +94,7 @@ fun_checkAndImportSettings(){
 }
 ############################
 
-fun_diamondLampLogo(){
+fun_diamondLampLogo() {
    echo -e "    +------------------------------------------------------------+
     |[0m[38;2;245;245;245mW[0m[38;2;244;244;244mW[0m[38;2;245;245;245mW[0m[38;2;245;245;245mW[0m[38;2;246;246;246mW[0m[38;2;244;244;244mW[0m[38;2;244;244;244mW[0m[38;2;245;245;245mW[0m[38;2;246;246;246mW[0m[38;2;245;245;245mW[0m[38;2;246;246;246mW[0m[38;2;245;245;245mW[0m[38;2;246;246;246mW[0m[38;2;246;246;246mW[0m[38;2;245;245;245mW[0m[38;2;246;246;246mW[0m[38;2;245;245;245mW[0m[38;2;245;245;245mW[0m[38;2;245;245;245mW[0m[38;2;245;245;245mW[0m[38;2;247;247;247mW[0m[38;2;244;244;244mW[0m[38;2;245;245;245mW[0m[38;2;245;245;245mW[0m[38;2;245;245;245mW[0m[38;2;245;245;245mW[0m[38;2;154;154;154md[0m[38;2;238;238;238mW[0m[38;2;244;244;244mW[0m[38;2;247;247;247mW[0m[38;2;246;246;246mW[0m[38;2;245;245;245mW[0m[38;2;241;241;241mW[0m[38;2;154;154;154md[0m[38;2;245;245;245mW[0m[38;2;246;246;246mW[0m[38;2;244;244;244mW[0m[38;2;245;245;245mW[0m[38;2;245;245;245mW[0m[38;2;244;244;244mW[0m[38;2;245;245;245mW[0m[38;2;245;245;245mW[0m[38;2;246;246;246mW[0m[38;2;245;245;245mW[0m[38;2;246;246;246mW[0m[38;2;245;245;245mW[0m[38;2;245;245;245mW[0m[38;2;246;246;246mW[0m[38;2;244;244;244mW[0m[38;2;245;245;245mW[0m[38;2;246;246;246mW[0m[38;2;245;245;245mW[0m[38;2;244;244;244mW[0m[38;2;245;245;245mW[0m[38;2;245;245;245mW[0m[38;2;246;246;246mW[0m[38;2;245;245;245mW[0m[38;2;245;245;245mW[0m[38;2;245;245;245mW[0m[38;2;246;246;246mW[0m|
     |[0m[38;2;245;245;245mW[0m[38;2;245;245;245mW[0m[38;2;245;245;245mW[0m[38;2;246;246;246mW[0m[38;2;245;245;245mW[0m[38;2;246;246;246mW[0m[38;2;245;245;245mW[0m[38;2;245;245;245mW[0m[38;2;246;246;246mW[0m[38;2;244;244;244mW[0m[38;2;246;246;246mW[0m[38;2;244;244;244mW[0m[38;2;246;246;246mW[0m[38;2;243;243;243mW[0m[38;2;246;246;246mW[0m[38;2;245;245;245mW[0m[38;2;246;246;246mW[0m[38;2;245;245;245mW[0m[38;2;246;246;246mW[0m[38;2;231;231;231mN[0m[38;2;153;153;153md[0m[38;2;213;213;213mK[0m[38;2;245;245;245mW[0m[38;2;246;246;246mW[0m[38;2;244;244;244mW[0m[38;2;244;244;244mW[0m[38;2;161;161;161mx[0m[38;2;183;183;183mO[0m[38;2;244;244;244mW[0m[38;2;246;246;246mW[0m[38;2;244;244;244mW[0m[38;2;246;246;246mW[0m[38;2;191;191;191m0[0m[38;2;157;157;157mx[0m[38;2;245;245;245mW[0m[38;2;247;247;247mW[0m[38;2;245;245;245mW[0m[38;2;244;244;244mW[0m[38;2;218;218;218mX[0m[38;2;150;150;150md[0m[38;2;229;229;229mN[0m[38;2;244;244;244mW[0m[38;2;247;247;247mW[0m[38;2;244;244;244mW[0m[38;2;246;246;246mW[0m[38;2;245;245;245mW[0m[38;2;246;246;246mW[0m[38;2;244;244;244mW[0m[38;2;245;245;245mW[0m[38;2;245;245;245mW[0m[38;2;247;247;247mW[0m[38;2;245;245;245mW[0m[38;2;246;246;246mW[0m[38;2;245;245;245mW[0m[38;2;245;245;245mW[0m[38;2;245;245;245mW[0m[38;2;244;244;244mW[0m[38;2;247;247;247mW[0m[38;2;245;245;245mW[0m[38;2;246;246;246mW[0m|
@@ -126,7 +126,7 @@ fun_diamondLampLogo(){
 }
 ############################
 
-fun_cgLogo(){
+fun_cgLogo() {
     clear
     echo -e "    +--------------------------------------------------------------------------------+
     |[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;247;251;253mM[0m[38;2;219;240;252mN[0m[38;2;193;230;252mX[0m[38;2;173;221;251mK[0m[38;2;161;216;252mK[0m[38;2;155;214;253m0[0m[38;2;154;214;254m0[0m[38;2;154;214;253m0[0m[38;2;155;214;252m0[0m[38;2;159;216;253mK[0m[38;2;172;221;252mK[0m[38;2;193;230;252mX[0m[38;2;218;240;252mN[0m[38;2;244;250;252mW[0m[38;2;254;255;254mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m|
@@ -176,7 +176,7 @@ fun_cgLogo(){
 }
 ############################
 
-fun_falseLoadingBar(){
+fun_falseLoadingBar() {
     # Create a fake loading bar that randomly completes.
     # Yeah, I know its pointless, but it looks cool!
     # Whats the point of writing this awesome script if
@@ -201,7 +201,7 @@ fun_falseLoadingBar(){
 }
 ############################
 
-fun_priorityCMD(){
+fun_priorityCMD() {
     # This function is to preform important commands that need confirmation the command was successful and its status logged.
     # Usage Example: fun_priorityCMD "bash-command" "CMD-Description" "SupressPreMessages"
     # Example: fun_priorityCMD "apt-get install -yq clamav clamav-daemon" "ClamAV Install" 0
@@ -230,6 +230,7 @@ fun_priorityCMD(){
 ############################
 
 fun_addNewAccount() {
+    #
     local str_userName="$1"
     local str_domainName="$2"
     ############################
@@ -252,14 +253,14 @@ fun_addNewAccount() {
     str_clearTextSftpPW="$(fun_newPasswordGen)"
     str_encryptedPW="$(perl -e 'print crypt($ARGV[0], "password")' ${str_clearTextSftpPW})"
     (useradd -m -p "${str_encryptedPW}" "${str_userName}") >/dev/null 2>&1
-    usermod -a -G "${str_webGroup}" "${str_userName}"
+    # usermod -a -G "${str_webGroup}" "${str_userName}"
     usermod -a -G "${str_sftpGroup}" "${str_userName}"
     usermod -s /bin/false "${str_userName}"
     chown -R root. "/home/${str_userName}" && chmod -R 755 "/home/${str_userName}"
     rm -fr "/home/${str_userName:?}/*"
     touch "/home/${str_userName}/YouCanOnlyUseTheWwwrootFolder.fyi"
     touch "/home/${str_userName}/ToLockAFolderFromPublicVeiwCopyThe-.htaccess-FileIntoTheFolder.fyi"
-    mkdir "/home/${str_userName}/wwwroot" && chown "${str_userName}:${str_webGroup}" "/home/${str_userName}/wwwroot" && chmod -R 2775 "/home/${str_userName}/wwwroot"
+    mkdir "/home/${str_userName}/wwwroot" && chown "${str_userName}:${str_userName}" "/home/${str_userName}/wwwroot" && chmod -R 2755 "/home/${str_userName}/wwwroot"
     mkdir "/home/${str_userName}/logs" && chown "${str_userName}." "/home/${str_userName}/logs" && chmod -R 2770 "/home/${str_userName}/logs"
     touch "/home/${str_userName}/logs/${str_domainName}_modsec.log"
     mkdir "/home/${str_userName}/ssl" && chown root. "/home/${str_userName}/ssl" && chmod -R 700 "/home/${str_userName}/ssl"
@@ -327,20 +328,8 @@ fun_addNewAccount() {
     # Add Web User Data to file for later use in Backs and removals.
     fun_createWebUserInfoFile "${str_domainName}" "${str_userName}" "${str_mysqlUserName}" "${str_databaseName}"
     ############################
-    # Make sure Apache SSL model is enabled
-    if [ -f "/etc/apache2/mods-enabled/ssl.load" ] && [ -f "/etc/apache2/mods-enabled/ssl.conf" ] ; then
-        echo -e "${color_GREEN}SSL Engine already running${color_NC}" | tee -a -i "${str_logFile}"
-    else
-        echo "SSL Engine is off, turn on.."
-        fun_priorityCMD "a2enmod ssl" "Apache SSL Mod enable "
-    fi
-    # Make the ReWrite Module is enabled.
-    if [ -f /etc/apache2/mods-enabled/rewrite.load ] ; then
-        echo -e "${color_GREEN}ReWrite Engine already running${color_NC}" | tee -a -i "${str_logFile}"
-    else
-        echo "ReWrite Engine is off, Turning on.."
-        fun_priorityCMD "a2enmod rewrite" "Apache rewrite Mod enable"
-    fi
+    # Make sure all Apache Modules neeed are enabled.
+    fun_configApacheModules
     ############################
     # Generate Self-Signed Cert for website.
     (openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
@@ -371,9 +360,9 @@ fun_addNewAccount() {
         RewriteCond %{HTTPS} off
         RewriteCond %{HTTP:X-Forwarded-Proto} =http
         RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
-        #<IfModule mpm_itk_module>
-        #    AssignUserId ${str_userName} ${str_userName}
-        #</IfModule>
+        <IfModule mpm_itk_module>
+            AssignUserId ${str_userName} ${str_userName}
+        </IfModule>
         <Directory /home/${str_userName}/wwwroot/>
             AllowOverride All
             Require all granted
@@ -392,9 +381,9 @@ fun_addNewAccount() {
             SecRuleEngine On
             SSLStrictSNIVHostCheck on
             DocumentRoot /home/${str_userName}/wwwroot/
-            #<IfModule mpm_itk_module>
-            #AssignUserId ${str_userName} ${str_userName}
-            #</IfModule>
+            <IfModule mpm_itk_module>
+            AssignUserId ${str_userName} ${str_userName}
+            </IfModule>
             <Directory /home/${str_userName}/wwwroot/>
                 AllowOverride All
                 Require all granted
@@ -513,13 +502,7 @@ fun_addNewAccount() {
 ############################
 
 fun_checkSFTP() {
-    # check if sftp and nobody group exist
-    if grep -q "${str_webGroup}" /etc/group ; then
-            echo -e "${color_GREEN}Web group good${color_NC}" | tee -a -i "${str_logFile}"
-        else
-            echo -e "${color_RED}Web group does not exits. !!Web User group miss-configured!!${color_NC}" | tee -a -i "${str_logFile}"
-            exit 1
-        fi
+    # Check if sftp group exist
     if grep -q "${str_sftpGroup}" /etc/group ; then
             echo -e "${color_GREEN}SFTP group good.${color_NC}" | tee -a -i "${str_logFile}"
         else
@@ -537,15 +520,14 @@ fun_checkSFTP() {
         #
         sed -i 's/Subsystem\ sftp.*.\/usr\/lib\/openssh\/sftp-server/Subsystem\ sftp\ internal-sftp/' /etc/ssh/sshd_config
         #
-        ( (service ssh restart >/dev/null 2>&1 && echo -e "${color_GREEN}SSH service for SFTP SUCCESS${color_NC}") || \
-        (echo -e "${color_RED}SSH service for SFTP !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
+        fun_priorityCMD "service ssh restart >/dev/null 2>&1" "SSH service for SFTP"
     else
         echo -e "${color_GREEN}SSH/SFTP Config Found, nothing to do.${color_NC}" | tee -a -i "${str_logFile}"
     fi
 }
 ############################
 
-fun_newPasswordGen(){
+fun_newPasswordGen() {
     local str_newPw1 str_newPw2 str_newPw3 str_newPw
     str_newPw1="$(openssl rand -base64 15 | tr -dc '[:alnum:]\n\r')"
     if [[ "$(expr length ${str_newPw1})" -lt 15 ]]; then
@@ -591,22 +573,14 @@ fun_modSecure_install() {
         sed -ie "s/<\/IfModule>/\\tIncludeOptional\ \/usr\/share\/modsecurity-crs\/*.conf\n\tIncludeOptional \/usr\/share\/modsecurity-crs\/rules\/*.conf\\n\<\/IfModule\>/g"\
          /etc/apache2/mods-available/security2.conf
     fi
-    # Restart Apache to apply the changes.
-    fun_priorityCMD "a2enmod headers && systemctl restart apache2.service" "ModSecure Header-Mod Install"
+    # Check the needed modules are installed.
+    fun_configApacheModules
+    # Restart Apache
+    fun_priorityCMD "systemctl restart apache2.service" "Apache service restart for ModSec" 0
     # Confirm the ModSecurity Module is loaded.
     if [ -z "$(apachectl -M | grep security | tr -d ' ')" ]; then
         echo -e "${color_RED}ModSec not loaded!${color_NC} "
     fi
-}
-############################
-
-fun_modSecure_remove() {
-    # Mod_Secure config Removal # For Testing install, not used in prod.
-    apt-get remove --purge libapache2-mod-security2 -y
-    apt-get -y autoremove
-    rm -rf /usr/share/modsecurity-crs*
-    rm -rf /etc/modsecurity*
-    systemctl restart apache2.service
 }
 ############################
 
@@ -618,7 +592,7 @@ fun_baseInstall() {
     str_clearTextMysqlRootPW="${3}"
     # Install all the needed packages.
     export DEBIAN_FRONTEND=noninteractive
-    ( (apt-get install -yq phpmyadmin mariadb-server apache2 php git unzip htop atop bash-completion libpam-pwquality bc && \
+    ( (apt-get install -yq phpmyadmin mariadb-server apache2 php git unzip htop atop bash-completion libpam-pwquality bc libapache2-mpm-itk && \
         echo -e "${color_GREEN}Base Packaged Install SUCCESS${color_NC}") || \
     (echo -e "${color_RED}Core Software Install !FAIL!${color_NC}") ) | tee -a -i "${str_logFile}"
     ############################
@@ -748,8 +722,9 @@ fun_apacheSecConfig() {
         SecRule ARGS:modsecparam \"@contains test\" \"id:4321,deny,status:403,msg:'ModSecurity test rule has triggered'\"
     </VirtualHost>" > /etc/apache2/sites-available/000-default.conf
     # Disallow weak SSL/TLS
-    sed -i 's/.*SSLProtocol*.*/\t\#/' /etc/apache2/mods-available/ssl.conf
-    sed -i '/<\/IfModule>/i \\tSSLProtocol\ -all\ -SSLv3\ -TLSv1\ -TLSv1.1\n\tSSLHonorCipherOrder\ off\n\tSSLSessionTickets\ off\n\tSSLUseStapling\ On\n\tSSLStaplingCache\ \"shmcb:/tmp/ssl_stapling(32768)\"' /etc/apache2/mods-available/ssl.conf
+    # sed -i 's/.*SSLProtocol*.*/\t\#/' /etc/apache2/mods-available/ssl.conf
+    # Removed. This is now covered in the fun_perfectSSL funtion.
+    # sed -i '/<\/IfModule>/i \\tSSLProtocol\ -all\ -SSLv3\ -TLSv1\ -TLSv1.1\n\tSSLHonorCipherOrder\ off\n\tSSLSessionTickets\ off\n\tSSLUseStapling\ On\n\tSSLStaplingCache\ \"shmcb:/tmp/ssl_stapling(32768)\"' /etc/apache2/mods-available/ssl.conf
     ##
     # Apache to give out the least details about the server.
     echo '
@@ -858,6 +833,8 @@ fun_apparmorInstall() {
     fun_priorityCMD "systemctl enable apparmor && systemctl start apparmor" "AppArmor Enabled and started"
     # PhpMyAdmin Install AppArmor Config
     fun_phpmyadminApparmor
+    # Apache Install AppArmor Config
+    fun_apacheApparmorConfig
     # Parse the Apache2 AppArmor profile.
     fun_priorityCMD "apparmor_parser -a /etc/apparmor.d/usr.sbin.apache2" "Apache's AppArmor profile enforced"
     # Enforce Apache2 AppArmor profile.
@@ -898,6 +875,44 @@ fun_phpmyadminApparmor() {
 }
 ############################
 
+fun_apacheApparmorConfig() {
+    echo '
+    # Last Modified: Mon Nov 15 14:46:06 2021
+    #include <tunables/global>
+    # Author: Marc Deslauriers <marc.deslauriers@ubuntu.com>
+    profile apache2 /usr/{bin,sbin}/apache2 flags=(attach_disconnected) {
+    #include <abstractions/base>
+    #include <abstractions/nameservice>
+    #include <apache2.d>
+    #include <local/usr.sbin.apache2>
+    capability dac_override,
+    capability dac_read_search,
+    capability kill,
+    capability net_bind_service,
+    capability setgid,
+    capability setuid,
+    capability sys_tty_config,
+    signal send peer=@{profile_name}//*,
+    / rw,
+    /** mrwlkix,
+
+    ^DEFAULT_URI flags=(attach_disconnected) {
+        #include <abstractions/apache2-common>
+        #include <abstractions/base>
+        / rw,
+        /** mrwlkix,
+    }
+    ^HANDLING_UNTRUSTED_INPUT flags=(attach_disconnected) {
+        #include <abstractions/apache2-common>
+        #include <abstractions/dovecot-common>
+        #include <abstractions/postfix-common>
+        / rw,
+        /** mrwlkix,
+    }
+    }' > /etc/apparmor.d/usr.sbin.apache2
+}
+############################
+
 fun_ossecInstall() {
     # Check if OSSEC is already installed. If it is then do nothing.
     if [ -f "/etc/ossec-init.conf" ]; then
@@ -905,11 +920,13 @@ fun_ossecInstall() {
     else
         local int_endConfigParam str_configUpdate str_ossecConfigFile str_whiteListRange str_smtpServer
         # Install required packages.
-        fun_priorityCMD "apt-get -y install gcc make libevent-dev zlib1g-dev libssl-dev libpcre2-dev wget tar" "OSSec requirements Install"
+        fun_priorityCMD "apt-get -y install gcc make libevent-dev zlib1g-dev libssl-dev libpcre2-dev wget tar libsystemd-dev" "OSSec requirements Install"
         # Download OSSEC source code
-        wget https://github.com/ossec/ossec-hids/archive/3.6.0.tar.gz -P /tmp
-        # Unpack OSSEC source code
-        tar xzf /tmp/3.6.0.tar.gz -C /tmp/
+        # Old method. Not working in Ubuntu 21.04, so switched to latest Git versions
+        # wget https://github.com/ossec/ossec-hids/archive/3.6.0.tar.gz -P /tmp
+        git clone https://github.com/ossec/ossec-hids.git /tmp/ossec-hids-3.6.0
+        # Unpack OSSEC source code -  not needed with GIT method.
+        # tar xzf /tmp/3.6.0.tar.gz -C /tmp/
         # Get the SMTP server used for the admin email address set from the "Settings.sh" file.
         str_smtpServer="$(echo ${str_adminEmail}|awk -F'@' -- '{print $2}'|xargs -I[] dig +short [] MX |awk -F' ' '{print $2}')"
         # Get WhiteList IPs from this server and subnet.
@@ -1101,7 +1118,7 @@ fun_deleteUserAccount() {
 }
 ############################
 
-fun_installAutoUpdate(){
+fun_installAutoUpdate() {
     # Install all the needed packages.
     fun_priorityCMD "apt-get install -yq unattended-upgrades apt-listchanges" "Auto Updater Install"
     # Add email alert with global admin email
@@ -1113,14 +1130,7 @@ fun_installAutoUpdate(){
 }
 ############################
 
-fun_installAdvLogging(){
-    # Install advanced loggin and reporting.
-    echo "Install advanced loggin and reporting."
-   # Email if system reboot is needed.
-}
-############################
-
-fun_installClamAV(){
+fun_installClamAV() {
     # Install ClamAV and configure daily scanning and quarantine. OSSEC will alert when malware is discovered.
     local str_cronFile str_quarantineDir str_clamavLog str_clamavConfigFile
     str_cronFile='/etc/cron.d/clamdscan'
@@ -1139,6 +1149,8 @@ fun_installClamAV(){
     /usr/bin/chmod 600 "${str_quarantineDir}"
     # Add daily clamAV scan to cron.d.
     echo "0 1 * * 0 root /usr/bin/clamdscan --infected --quiet --fdpass --log=${str_clamavLog} --move=${str_quarantineDir} /" > "${str_cronFile}"
+    # Load the cron job file.
+    /usr/bin/crontab /etc/cron.d/clamdscan
     # Add DIR to exclude from scans.
     printf \
     "ExcludePath ^/proc\nExcludePath ^/sys\nExcludePath ^/run\nExcludePath ^/dev\nExcludePath ^/snap\nExcludePath ^/var/lib/lxcfs/cgroup\nExcludePath ^/tmp/quarantine\n" | \
@@ -1152,7 +1164,7 @@ fun_installClamAV(){
 }
 ############################
 
-fun_fixHostname(){
+fun_fixHostname() {
     # Check that the Hostname is set up correctly.
     if [[ $(hostname -f|grep -o "\."|wc -l) -lt 2 ]] ;then
         local str_hostname str_domainName str_fqdn str_confirm
@@ -1201,7 +1213,7 @@ fun_scriptEncodingFix() {
 }
 ############################
 
-fun_requiredPackageCheck(){
+fun_requiredPackageCheck() {
     local str_required_pkg bln_pkg_good
     str_required_pkg="$1"
     bln_pkg_good=$(dpkg-query -W --showformat='${Status}\n' "${str_required_pkg}" | grep 'install ok installed')
@@ -1213,7 +1225,7 @@ fun_requiredPackageCheck(){
 }
 ############################
 
-fun_checkForUpdates(){
+fun_checkForUpdates() {
     local int_daysSinceLattUpdate str_lastUpdateTimeStamp
     # Check is the system has ever been updated. If updates never run, this file will not exist.
     if [ -f "/var/lib/apt/periodic/update-success-stamp" ] ; then
@@ -1233,7 +1245,7 @@ fun_checkForUpdates(){
 }
 ############################
 
-fun_osUpdateCommands(){
+fun_osUpdateCommands() {
     # Update OS
     fun_priorityCMD "apt-get -yq update" "APT Update"
     # Upgrade the Distro
@@ -1243,7 +1255,7 @@ fun_osUpdateCommands(){
 }
 ############################
 
-fun_createWebUserInfoFile(){
+fun_createWebUserInfoFile() {
     # Example: fun_createWebUserInfoFile $str_domainName $str_userName $str_databaseUserName $str_databaseName
     local str_domainName str_userName str_databaseUserName str_databaseName str_addedDate
     str_domainName="${1}"
@@ -1263,7 +1275,7 @@ fun_createWebUserInfoFile(){
 }
 ############################
 
-fun_certbotInstall(){
+fun_certbotInstall() {
     # Check for Let's Encrypt CertBot, if missing git it.
     if (dpkg-query -W certbot >/dev/null 2>&1) && (dpkg-query -W python3-certbot-apache >/dev/null 2>&1) ; then
         # Certbot and required packages are installed.
@@ -1285,7 +1297,7 @@ fun_certbotInstall(){
 }
 ############################
 
-fun_checkInstallerRun(){
+fun_checkInstallerRun() {
     # Check if the install has run before. Running it twice will break things, and should be avoided.
     if [ -f "$(pwd)/.installer_ran" ]; then
         # The file does exist.
@@ -1305,21 +1317,7 @@ fun_checkInstallerRun(){
 }
 ############################
 
- fun_installWP(){
-    # Not done, a lot to do here.
-    local str_userName
-    str_userName='cgdev4'
-    wget 'https://wordpress.org/latest.zip' -O '/tmp/wp_latest.zip'
-    unzip -o -q '/tmp/wp_latest.zip' -d '/tmp/wp_latest'
-    cp -r /tmp/wp_latest/wordpress/* /home/"${str_userName}"/wwwroot/
-    chown -R "${str_userName}":www-data /home/"${str_userName}"/wwwroot
-    chmod -R 2775 /home/"${str_userName}"/wwwroot
-    rm -f /home/"${str_userName}"/wwwroot/index.html
-    rm -rf '/tmp/wp_latest'
- }
-############################
-
-fun_checkAllServicesStatus(){
+fun_checkAllServicesStatus() {
     # AppArmor Service check.
     fun_priorityCMD "(systemctl status apparmor.service) >/dev/null 2>&1" "AppArmor Service" 0
 
@@ -1376,7 +1374,7 @@ fun_checkAllServicesStatus(){
 }
 ############################
 
-fun_perfectSSL(){
+fun_perfectSSL() {
     # Set up DH Key and strong SSL/TLS settings for the Apache mod_ssl.
     local str_certDir str_certName
     str_certDir='/etc/apache2/ssl'
@@ -1384,7 +1382,8 @@ fun_perfectSSL(){
     mkdir "${str_certDir}"
     chmod 644 "${str_certDir}"
     chown root:root "${str_certDir}"
-    fun_priorityCMD "/usr/bin/openssl dhparam -out \"${str_certDir}\"/\"${str_certName}\" 4096" "Generate DH Key"
+    echo -e "${color_BIYellow}Generating a DH Key take a LOT of CPU and time. This may take 30 minutes to 1 hour!${color_NC}"
+    fun_priorityCMD "(/usr/bin/openssl dhparam -out \"${str_certDir}\"/\"${str_certName}\" 4096) >/dev/null 2>&1" "Generate DH Key"
     chown -R root:root "${str_certDir}"
     chmod 644 "${str_certDir}"
     chmod 640 "${str_certDir}""/${str_certName}"
@@ -1468,6 +1467,59 @@ fun_perfectSSL(){
 }
 ############################
 
+fun_checkForInstallErrors() {
+    # This function checks for error. Error can be noted in install log if a command run with "fun_priorityCMD" fails.
+    # Other erro may occur, but only command run with "fun_priorityCMD" will generate '!FAIL!' message in the log.
+    if [[ $(grep -c '!FAIL!' "${str_logFile}") -gt 0 ]]; then
+        echo -e "${color_BIRed} Errors during install occured. Please review the log.${color_NC}"
+        echo -e "${color_RED} Errors listed below.${color_NC}"
+        echo -e "${color_BIRed}--------------------------------${color_NC}"
+        grep '!FAIL!' "${str_logFile}"
+        echo -e "${color_BIRed}--------------------------------${color_NC}"
+    else
+        echo -e "${color_BGreen} NO Errors during install occured.${color_NC}"
+        fun_checkAllServicesStatus
+    fi
+}
+############################
+
+fun_configApacheModules() {
+
+    # Make sure Apache SSL model is enabled
+    if [ -f "/etc/apache2/mods-enabled/ssl.load" ] && [ -f "/etc/apache2/mods-enabled/ssl.conf" ] ; then
+        echo -e "${color_GREEN}SSL Engine already running${color_NC}" | tee -a -i "${str_logFile}"
+    else
+        echo "SSL Engine is off, turn on.."
+        fun_priorityCMD "a2enmod ssl" "Apache SSL Mod enable "
+    fi
+
+    # Make the ReWrite Module is enabled.
+    if [ -f /etc/apache2/mods-enabled/rewrite.load ] ; then
+        echo -e "${color_GREEN}ReWrite Engine already running${color_NC}" | tee -a -i "${str_logFile}"
+    else
+        echo "ReWrite Engine is off, Turning on.."
+        fun_priorityCMD "a2enmod rewrite" "Apache rewrite Mod enable"
+    fi
+
+    # Make the libapache2-mpm-itk Module is enabled.
+    if [ -f /etc/apache2/mods-enabled/mpm_itk.load ] ; then
+        echo -e "${color_GREEN}Multi-Processing Module already running${color_NC}" | tee -a -i "${str_logFile}"
+    else
+        echo "Multi-Processing Module is off, Turning on.."
+        fun_priorityCMD "a2enmod mpm_itk" "Multi-Processing Module enable"
+    fi
+
+    # Make the Headers Module is enabled.
+    if [ -f /etc/apache2/mods-enabled/headers.load ] ; then
+        echo -e "${color_GREEN}Headers Module already running${color_NC}" | tee -a -i "${str_logFile}"
+    else
+        echo "Headers Module is off, Turning on.."
+        fun_priorityCMD "a2enmod headers" "Header-Mod enabled"
+    fi
+
+}
+############################
+
 fun_fullInstall() {
 
     # Add the start time to the install log
@@ -1540,6 +1592,9 @@ fun_fullInstall() {
     # Restart MariaDB(MySQL)
     fun_priorityCMD "systemctl restart mariadb.service" "MariaDB service restart" 0
 
+    # Check if there was errors during install.
+    fun_checkForInstallErrors
+
     # Finishing flare.
     fun_diamondLampLogo
     echo -e "    +------------------------------------------------------------+"
@@ -1588,10 +1643,6 @@ case "${str_command}" in
 
     --test)
         # Test
-        # fun_installClamAV
-        # fun_perfectSSL
-        # fun_installWP
-        fun_installClamAV
         ;;
 
     --addwebuser)
@@ -1599,10 +1650,6 @@ case "${str_command}" in
         clear
         fun_diamondLampLogo
         fun_getNewWebUserDetails
-        ;;
-
-    --remove)
-        fun_modSeccure_remove
         ;;
 
     --delwebuser)

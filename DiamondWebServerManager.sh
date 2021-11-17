@@ -571,7 +571,7 @@ fun_modSecure_install() {
 
 fun_baseInstall() {
     # Get variables needed for new install.
-    local str_webAdminUsername str_webAdminPassword str_clearTextMysqlRootPW
+    local str_webAdminUsername str_webAdminPassword str_clearTextMysqlRootPW str_mysqlSecSetupScript
     str_webAdminUsername="${1}"
     str_webAdminPassword="${2}"
     str_clearTextMysqlRootPW="${3}"
@@ -583,7 +583,6 @@ fun_baseInstall() {
     ############################
     ######## MySQL Set Up ######
     # These are the key commands run in "mysql_secure_installation". I have distilled that script to the below, making automation better..
-    local str_mysqlSecSetupScript
     # Using "Printf" is the only method to pass a SQL script as a variable. You could have done this in a "heredoc"(<<EOF....EOF)
     # the double quotes will corrupt your string. I would have had to copy and paste this same script multiple times, and that is just ugly.
     /usr/bin/printf -v str_mysqlSecSetupScript "
@@ -706,11 +705,6 @@ fun_apacheSecConfig() {
         SecRuleEngine On
         SecRule ARGS:modsecparam \"@contains test\" \"id:4321,deny,status:403,msg:'ModSecurity test rule has triggered'\"
     </VirtualHost>" > /etc/apache2/sites-available/000-default.conf
-    # Disallow weak SSL/TLS
-    # sed -i 's/.*SSLProtocol*.*/\t\#/' /etc/apache2/mods-available/ssl.conf
-    # Removed. This is now covered in the fun_perfectSSL funtion.
-    # sed -i '/<\/IfModule>/i \\tSSLProtocol\ -all\ -SSLv3\ -TLSv1\ -TLSv1.1\n\tSSLHonorCipherOrder\ off\n\tSSLSessionTickets\ off\n\tSSLUseStapling\ On\n\tSSLStaplingCache\ \"shmcb:/tmp/ssl_stapling(32768)\"' /etc/apache2/mods-available/ssl.conf
-    ##
     # Apache to give out the least details about the server.
     echo '
     ServerTokens Prod
@@ -737,11 +731,11 @@ fun_firewallConfig() {
 ############################
 
 fun_fail2banConfig() {
-    ( (apt-get install -yq fail2ban sendmail sendmail-bin git && echo -e "${color_GREEN}Fail2Ban Install SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}Fail2Ban or SendMail Install !FAIL!${color_NC}")  ) | tee -a -i "${str_g_logFile}"
+    # Install and configure Fail2Ban service.
+    # Run the install
+    fun_priorityCMD "apt-get install -yq fail2ban sendmail sendmail-bin git" "Fail2Ban Install"
     # Fail2Ban Config
     echo -e "[DEFAULT]\ndbpurgeage = 30d" > /etc/fail2ban/fail2ban.local
-    #
     # Get the IP address used for WAN access. Needed for the ignoreip config
     str_mainIpv4Addr=$(ip route get 1.1.1.1 | grep -oP 'src \K\S+')
     # Set the Jail Config

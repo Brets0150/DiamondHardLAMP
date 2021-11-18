@@ -19,7 +19,7 @@ Over the years I have built scripts to automate my roles as a Linux System Admin
 
 ## Hardening Tools and Configurations
 
-### Security Tools include 
+### Services & Security Tools Include 
  - Apache latest
  - MariaDB latest
  - PHP 7.x latest

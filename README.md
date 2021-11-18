@@ -1,3 +1,5 @@
+# Work in Progress - DHL not done at this time.
+
 # Diamond Hard LAMP
 
 ![DiamondHardLAMP Logo](https://cybergladius.com/wp-content/uploads/2021/11/logo_2_small.png)

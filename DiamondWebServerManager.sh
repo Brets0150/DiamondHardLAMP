@@ -234,8 +234,9 @@ fun_priorityCMD() {
 
 fun_addNewAccount() {
     #
-    local str_userName="$1"
-    local str_domainName="$2"
+    local str_userName str_domainName str_clearTextWebPW str_clearTextSftpPW str_encryptedPW
+    str_userName="$1"
+    str_domainName="$2"
     ############################
     # Check if all arguments have been given
     if [ -z "${str_userName}" ] || [ -z "${str_domainName}" ]; then
@@ -251,7 +252,6 @@ fun_addNewAccount() {
     fi
     ############################
     # START User Create and web folder tree.
-    local str_clearTextWebPW str_clearTextSftpPW str_encryptedPW
     str_clearTextWebPW="$(fun_newPasswordGen)"
     str_clearTextSftpPW="$(fun_newPasswordGen)"
     str_encryptedPW="$(perl -e 'print crypt($ARGV[0], "password")' ${str_clearTextSftpPW})"
@@ -363,9 +363,9 @@ fun_addNewAccount() {
         RewriteCond %{HTTPS} off
         RewriteCond %{HTTP:X-Forwarded-Proto} =http
         RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
-        <IfModule mpm_itk_module>
-            AssignUserId ${str_userName} ${str_userName}
-        </IfModule>
+        #<IfModule mpm_itk_module>
+            #AssignUserId ${str_userName} ${str_userName}
+        #</IfModule>
         <Directory /home/${str_userName}/wwwroot/>
             AllowOverride All
             Require all granted
@@ -384,9 +384,9 @@ fun_addNewAccount() {
             SecRuleEngine On
             SSLStrictSNIVHostCheck on
             DocumentRoot /home/${str_userName}/wwwroot/
-            <IfModule mpm_itk_module>
-            AssignUserId ${str_userName} ${str_userName}
-            </IfModule>
+            #<IfModule mpm_itk_module>
+                #AssignUserId ${str_userName} ${str_userName}
+            #</IfModule>
             <Directory /home/${str_userName}/wwwroot/>
                 AllowOverride All
                 Require all granted
@@ -437,6 +437,7 @@ fun_addNewAccount() {
     /home/${str_userName}/wwwroot/** rw,
     /home/${str_userName}/.secret/.htpasswd r,
     /var/lib/letsencrypt/http_challenges/** r,
+    /etc/apache2/.secret/.htpasswd r,
     /home/${str_userName}/logs/${str_domainName}_access.log w,
     /home/${str_userName}/logs/${str_domainName}_error.log w,
     /home/${str_userName}/logs/${str_domainName}_modsec.log w,
@@ -580,7 +581,8 @@ fun_baseInstall() {
     str_clearTextMysqlRootPW="${3}"
     # Install all the needed packages.
     export DEBIAN_FRONTEND=noninteractive
-    ( (apt-get install -yq phpmyadmin mariadb-server apache2 php git unzip htop atop bash-completion libpam-pwquality bc libapache2-mpm-itk && \
+    # pulled 'libapache2-mpm-itk'
+    ( (apt-get install -yq phpmyadmin mariadb-server apache2 php git unzip htop atop bash-completion libpam-pwquality bc && \
         echo -e "${color_GREEN}Base Packaged Install SUCCESS${color_NC}") || \
     (echo -e "${color_RED}Core Software Install !FAIL!${color_NC}") ) | tee -a -i "${str_g_logFile}"
     ############################
@@ -854,6 +856,11 @@ fun_phpmyadminApparmor() {
     deny /bin/bash r,
     deny /bin/sh r,
     }' > /etc/apparmor.d/apache2.d/phpmyadmin-a2
+    echo '
+    <IfModule mod_apparmor.c>
+        AADefaultHatName phpmyadmin-a2
+    </IfModule>
+    ' >> /etc/apache2/conf-enabled/phpmyadmin.conf
 }
 ############################
 
@@ -1478,12 +1485,12 @@ fun_configApacheModules() {
     fi
 
     # Make the libapache2-mpm-itk Module is enabled.
-    if [ -f /etc/apache2/mods-enabled/mpm_itk.load ] ; then
-        echo -e "${color_GREEN}Multi-Processing Module already running${color_NC}" | tee -a -i "${str_g_logFile}"
-    else
-        echo "Multi-Processing Module is off, Turning on.."
-        fun_priorityCMD "a2enmod mpm_itk" "Multi-Processing Module enable"
-    fi
+    # if [ -f /etc/apache2/mods-enabled/mpm_itk.load ] ; then
+    #     echo -e "${color_GREEN}Multi-Processing Module already running${color_NC}" | tee -a -i "${str_g_logFile}"
+    # else
+    #     echo "Multi-Processing Module is off, Turning on.."
+    #     fun_priorityCMD "a2enmod mpm_itk" "Multi-Processing Module enable"
+    # fi
 
     # Make the Headers Module is enabled.
     if [ -f /etc/apache2/mods-enabled/headers.load ] ; then

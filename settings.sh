@@ -6,7 +6,7 @@
 #######################
 str_g_adminEmail=''         # Example: admin@example.com  :: Where to send email when script is done. This will have the account login details email to it.
 str_g_emailRelaySever=''    # Example: mail.example.com   :: Set set a mail RELAY for your domain
-str_g_port=""               # Example: 22                 :: This should be the SSH port that can access the server from the Internet, so customers can SFTP here.
+str_g_port=''               # Example: 22                 :: This should be the SSH port that can access the server from the Internet, so customers can SFTP here.
 #######################
 # Default Self-Signed SSL Cert Details.
 #######################

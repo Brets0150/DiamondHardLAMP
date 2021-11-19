@@ -21,11 +21,14 @@
 # Get command passed to script.
 str_g_command="$1"
 
+# Get scripts current DIR
+str_g_scriptsDir="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
 # Config file location and name.
-str_g_settings_file_name="$(pwd)/settings.sh"
+str_g_settings_file_name="${str_g_scriptsDir}/settings.sh"
 
 # This scripts log file.
-str_g_logFile="$(pwd)/dhl_install_log.txt"
+str_g_logFile="${str_g_scriptsDir}/dhl_install_log.txt"
 
 #######################
 #### Start Script #####
@@ -253,7 +256,7 @@ fun_addNewAccount() {
     str_clearTextSftpPW="$(fun_newPasswordGen)"
     str_encryptedPW="$(perl -e 'print crypt($ARGV[0], "password")' ${str_clearTextSftpPW})"
     (useradd -m -p "${str_encryptedPW}" "${str_userName}") >/dev/null 2>&1
-    # usermod -a -G "${str_g_webGroup}" "${str_userName}"
+    usermod -a -G "${str_g_webGroup}" "${str_userName}"
     usermod -a -G "${str_g_sftpGroup}" "${str_userName}"
     usermod -s /bin/false "${str_userName}"
     chown -R root. "/home/${str_userName}" && chmod -R 755 "/home/${str_userName}"
@@ -706,10 +709,10 @@ fun_apacheSecConfig() {
         SecRule ARGS:modsecparam \"@contains test\" \"id:4321,deny,status:403,msg:'ModSecurity test rule has triggered'\"
     </VirtualHost>" > /etc/apache2/sites-available/000-default.conf
     # Apache to give out the least details about the server.
-    echo '
-    ServerTokens Prod
-    ServerSignature Off
-    TraceEnable Off' > "/etc/apache2/conf-enabled/security.conf"
+    # echo '
+    # ServerTokens Prod
+    # ServerSignature Off
+    # TraceEnable Off' > "/etc/apache2/conf-enabled/security.conf"
 }
 ############################
 

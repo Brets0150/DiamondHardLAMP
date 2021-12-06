@@ -2,7 +2,7 @@
 #
 # Author: Bret.s
 # Last Update: 9/16/2021
-# Version: 1.0
+# Version: 1.0-beta
 # Made In: Ubuntu 20.04 LTS
 # OS Tested: Ubuntu 20.04, Ubuntu 21.04
 # Purpose: Securly build and manage a shared webhosting server.
@@ -21,11 +21,14 @@
 # Get command passed to script.
 str_g_command="$1"
 
-# Get scripts current DIR
+# Set DHL Version Number
+str_g_version='1.0-beta'
+
+# Get script's current DIR
 str_g_scriptsDir="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 # Config file location and name.
-str_g_settings_file_name="${str_g_scriptsDir}/settings.sh"
+str_g_settings_file_name="${str_g_scriptsDir}/settings_mine.sh"
 
 # This scripts log file.
 str_g_logFile="${str_g_scriptsDir}/dhl_install_log.txt"
@@ -256,15 +259,15 @@ fun_addNewAccount() {
     str_clearTextSftpPW="$(fun_newPasswordGen)"
     str_encryptedPW="$(perl -e 'print crypt($ARGV[0], "password")' ${str_clearTextSftpPW})"
     (useradd -m -p "${str_encryptedPW}" "${str_userName}") >/dev/null 2>&1
-    usermod -a -G "${str_g_webGroup}" "${str_userName}"
+    # usermod -a -G "${str_g_webGroup}" "${str_userName}"
     usermod -a -G "${str_g_sftpGroup}" "${str_userName}"
     usermod -s /bin/false "${str_userName}"
     chown -R root. "/home/${str_userName}" && chmod -R 755 "/home/${str_userName}"
     rm -fr "/home/${str_userName:?}/*"
     touch "/home/${str_userName}/YouCanOnlyUseTheWwwrootFolder.fyi"
     touch "/home/${str_userName}/ToLockAFolderFromPublicVeiwCopyThe-.htaccess-FileIntoTheFolder.fyi"
-    mkdir "/home/${str_userName}/wwwroot" && chown "${str_userName}:${str_userName}" "/home/${str_userName}/wwwroot" && chmod -R 2755 "/home/${str_userName}/wwwroot"
-    mkdir "/home/${str_userName}/logs" && chown "${str_userName}." "/home/${str_userName}/logs" && chmod -R 2770 "/home/${str_userName}/logs"
+    mkdir "/home/${str_userName}/wwwroot" && chown -R "${str_userName}:${str_userName}" "/home/${str_userName}/wwwroot" && chmod -R 2755 "/home/${str_userName}/wwwroot"
+    mkdir "/home/${str_userName}/logs" && chown -R "${str_userName}." "/home/${str_userName}/logs" && chmod -R 2770 "/home/${str_userName}/logs"
     touch "/home/${str_userName}/logs/${str_domainName}_modsec.log"
     mkdir "/home/${str_userName}/ssl" && chown root. "/home/${str_userName}/ssl" && chmod -R 700 "/home/${str_userName}/ssl"
     echo "It's Works" >> "/home/${str_userName}/wwwroot/index.html"
@@ -357,18 +360,20 @@ fun_addNewAccount() {
         ServerAdmin admin@${str_domainName}
         ServerName ${str_domainName}
         ServerAlias www.${str_domainName}
-        SecRuleEngine On
         DocumentRoot /home/${str_userName}/wwwroot/
+        SecRuleEngine On
         RewriteEngine On
-        RewriteCond %{HTTPS} off
-        RewriteCond %{HTTP:X-Forwarded-Proto} =http
-        RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
-        #<IfModule mpm_itk_module>
-            #AssignUserId ${str_userName} ${str_userName}
-        #</IfModule>
+        RewriteCond %{HTTPS} off [OR]
+        RewriteCond \"%{HTTP_HOST}\" \"^www\.\" [NC]
+        RewriteCond \"%{HTTP_HOST}\" \"!^$\"
+        RewriteRule \"^/?(.*)\"      \"https://%{HTTP_HOST}/\$1\" [L,R=301,NE]
+        <IfModule mpm_itk_module>
+            AssignUserId ${str_userName} ${str_userName}
+        </IfModule>
         <Directory /home/${str_userName}/wwwroot/>
             AllowOverride All
             Require all granted
+            AAHatName ${str_domainName}-a2
         </Directory>
         LogLevel warn
         SecAuditLog /home/${str_userName}/logs/${str_domainName}_modsec.log
@@ -381,31 +386,17 @@ fun_addNewAccount() {
             ServerAdmin admin@${str_domainName}
             ServerName ${str_domainName}
             ServerAlias www.${str_domainName}
+            DocumentRoot /home/${str_userName}/wwwroot/
             SecRuleEngine On
             SSLStrictSNIVHostCheck on
-            DocumentRoot /home/${str_userName}/wwwroot/
-            #<IfModule mpm_itk_module>
-                #AssignUserId ${str_userName} ${str_userName}
-            #</IfModule>
+            <IfModule mpm_itk_module>
+                AssignUserId ${str_userName} ${str_userName}
+            </IfModule>
             <Directory /home/${str_userName}/wwwroot/>
                 AllowOverride All
                 Require all granted
-                AAHatName ${str_domainName}
+                AAHatName ${str_domainName}-a2
             </Directory>
-            ErrorDocument 401 /custom_404.html
-            ErrorDocument 403 /custom_404.html
-            ErrorDocument 404 /custom_404.html
-            ErrorDocument 405 /custom_404.html
-            ErrorDocument 410 /custom_404.html
-            ErrorDocument 411 /custom_404.html
-            ErrorDocument 412 /custom_404.html
-            ErrorDocument 413 /custom_404.html
-            ErrorDocument 414 /custom_404.html
-            ErrorDocument 415 /custom_404.html
-            ErrorDocument 500 /custom_50x.html
-            ErrorDocument 502 /custom_50x.html
-            ErrorDocument 503 /custom_50x.html
-            ErrorDocument 504 /custom_50x.html
             # enable HTTP/2, if available
             ProtocolsHonorOrder on
             Protocols h2 h2c http/1.1
@@ -430,18 +421,28 @@ fun_addNewAccount() {
     # Create the AppArmor Config
     # AppArmor and Apache must be configured and the new site enabled BEFORE we can have LetsEncrypt issue a SSL cert!
     echo "
-    ^${str_domainName} {
+    ^${str_domainName}-a2 flags=(attach_disconnected){
     #include <abstractions/apache2-common>
     #include <abstractions/base>
     #include <abstractions/php>
+    # Allow Read-Write Access to main Web DIR
     /home/${str_userName}/wwwroot/** rw,
+    # Allow Read-only access for authenticating .htaccess
     /home/${str_userName}/.secret/.htpasswd r,
-    /var/lib/letsencrypt/http_challenges/** r,
     /etc/apache2/.secret/.htpasswd r,
+    /var/lib/letsencrypt/http_challenges/** r,
+    #  Allow Write-only Access log files
     /home/${str_userName}/logs/${str_domainName}_access.log w,
     /home/${str_userName}/logs/${str_domainName}_error.log w,
     /home/${str_userName}/logs/${str_domainName}_modsec.log w,
-    }" > "/etc/apparmor.d/apache2.d/${str_domainName}-aa"
+    # Allow Read-Write Access to MySQL service
+    /run/mysqld/mysqld.sock wr,
+    # Deny Access to Data leaking files.
+    deny /home/${str_userName}/wwwroot/{Changelog,LICENSE,README,RELEASE-DATE-*,CONTRIBUTING.md,composer.*} r,
+    # Deny access to Bash/sh
+    deny /bin/bash r,
+    deny /bin/sh r,
+    }" > "/etc/apparmor.d/apache2.d/${str_domainName}-a2"
     # Parse and Enable the new AppArmor Config.
     fun_priorityCMD "apparmor_parser -r /etc/apparmor.d/usr.sbin.apache2" "Apache's AppArmor profile enforced"
     # Enable the new website config file.
@@ -581,10 +582,7 @@ fun_baseInstall() {
     str_clearTextMysqlRootPW="${3}"
     # Install all the needed packages.
     export DEBIAN_FRONTEND=noninteractive
-    # pulled 'libapache2-mpm-itk'
-    ( (apt-get install -yq phpmyadmin mariadb-server apache2 php git unzip htop atop bash-completion libpam-pwquality bc && \
-        echo -e "${color_GREEN}Base Packaged Install SUCCESS${color_NC}") || \
-    (echo -e "${color_RED}Core Software Install !FAIL!${color_NC}") ) | tee -a -i "${str_g_logFile}"
+    fun_priorityCMD "apt-get install -yq phpmyadmin mariadb-server apache2 php git unzip htop atop bash-completion libapache2-mpm-itk libpam-pwquality bc" "Core Package Install"
     ############################
     ######## MySQL Set Up ######
     # These are the key commands run in "mysql_secure_installation". I have distilled that script to the below, making automation better..
@@ -662,6 +660,9 @@ fun_baseInstall() {
     fun_priorityCMD "/usr/sbin/a2enconf phpmyadmin" "PHPMyAdmin Enabled in Apache"
     sed -i '/DirectoryIndex.*/a \ \ \ \ AllowOverride\ AuthConfig\n\ \ \ \ SecRuleEngine\ Off' /etc/apache2/conf-enabled/phpmyadmin.conf
     ############################
+    # Copnfiger PHP.INI
+    fun_changePhpIniSettings
+    ############################
     # Enforce Strong passwords.
     sed -ie 's/pam_pwquality.so.*/pam_pwquality.so\ retry=3\ minlen=13\ maxrepeat=3\ ucredit=-1\ lcredit=-1\ dcredit=-1\ difok=5\ reject_username\ enforce_for_root/' /etc/pam.d/common-password
     sed -ie 's/pam_unix.so.*/pam_unix.so\ obscure\ use_authtok\ try_first_pass\ sha512\ rounds=100000"/' /etc/pam.d/common-password
@@ -693,28 +694,16 @@ fun_apacheSecConfig() {
         CustomLog \${APACHE_LOG_DIR}/access.log combined
         # Visitor who do not know a VitualHost name of a site hosted here are redirected to Google.com.
         Redirect \"/\" \"https://google.com/\"
-        ErrorDocument 401 /custom_404.html
-        ErrorDocument 403 /custom_404.html
-        ErrorDocument 404 /custom_404.html
-        ErrorDocument 405 /custom_404.html
-        ErrorDocument 410 /custom_404.html
-        ErrorDocument 411 /custom_404.html
-        ErrorDocument 412 /custom_404.html
-        ErrorDocument 413 /custom_404.html
-        ErrorDocument 414 /custom_404.html
-        ErrorDocument 415 /custom_404.html
-        ErrorDocument 500 /custom_50x.html
-        ErrorDocument 502 /custom_50x.html
-        ErrorDocument 503 /custom_50x.html
-        ErrorDocument 504 /custom_50x.html
         SecRuleEngine On
         SecRule ARGS:modsecparam \"@contains test\" \"id:4321,deny,status:403,msg:'ModSecurity test rule has triggered'\"
     </VirtualHost>" > /etc/apache2/sites-available/000-default.conf
-    # Apache to give out the least details about the server.
-    # echo '
-    # ServerTokens Prod
-    # ServerSignature Off
-    # TraceEnable Off' > "/etc/apache2/conf-enabled/security.conf"
+    ##
+    # Set custom ErrorDocs globally. The error file must still exist in the user www-root dir.
+    echo -e "
+    ErrorDocument 401 /custom_404.html\nErrorDocument 403 /custom_404.html\nErrorDocument 404 /custom_404.html\nErrorDocument 405 /custom_404.html
+    ErrorDocument 410 /custom_404.html\nErrorDocument 411 /custom_404.html\nErrorDocument 412 /custom_404.html\nErrorDocument 413 /custom_404.html
+    ErrorDocument 414 /custom_404.html\nErrorDocument 415 /custom_404.html\nErrorDocument 500 /custom_50x.html\nErrorDocument 502 /custom_50x.html
+    ErrorDocument 503 /custom_50x.html\nErrorDocument 504 /custom_50x.html" >> /etc/apache2/apache2.conf
 }
 ############################
 
@@ -839,18 +828,19 @@ fun_phpmyadminApparmor() {
     # Allow writting to Logs
     /var/log/apache2/access.log w,
     /var/log/apache2/error.log w,
+    /home/*/logs/*_error.log w,
+    /home/*/logs/*_access.log w,
+    /home/*/logs/*_modsec.log w,
     # Allow Socket Access
     /run/php/php7.4-fpm-www-phpmyadmin.sock wr,
     # Access to standard PHPMyAdmin files
     /usr/share/phpmyadmin/** r,
+    /usr/share/php/** r,
+    /etc/apache2/.secret/.htpasswd r,
     # Deny access to sensitive folders
-    deny /usr/share/phpmyadmin/templates/** r,
-    deny /usr/share/phpmyadmin/libraries/** r,
     deny /usr/share/phpmyadmin/setup/** r,
     deny /usr/share/phpmyadmin/examples/** r,
     deny /usr/share/phpmyadmin/{Changelog,LICENSE,README,RELEASE-DATE-*,CONTRIBUTING.md,composer.*} r,
-    deny /usr/share/phpmyadmin/*.php r,
-    deny /usr/share/phpmyadmin/**/*.php r,
     deny /var/www/** r,
     # Deny access to Bash/sh
     deny /bin/bash r,
@@ -858,7 +848,9 @@ fun_phpmyadminApparmor() {
     }' > /etc/apparmor.d/apache2.d/phpmyadmin-a2
     echo '
     <IfModule mod_apparmor.c>
-        AADefaultHatName phpmyadmin-a2
+            <Location /phpmyadmin>
+                    AAHatName phpmyadmin-a2
+            </Location>
     </IfModule>
     ' >> /etc/apache2/conf-enabled/phpmyadmin.conf
 }
@@ -1466,6 +1458,25 @@ fun_checkForInstallErrors() {
 }
 ############################
 
+fun_reloadAA-Apache(){
+    /usr/bin/systemctl stop apache2.service
+    /usr/sbin/apparmor_parser -R /etc/apparmor.d/usr.sbin.apache2
+    /usr/sbin/apparmor_parser -r /etc/apparmor.d/usr.sbin.apache2
+    /usr/bin/systemctl start apache2.service
+}
+############################
+
+fun_changePhpIniSettings(){
+    local str_phpIniFile str_postMax str_uploadMax
+    str_phpIniFile='/etc/php/7.4/apache2/php.ini'
+    str_postMax='250'
+    str_uploadMax='250'
+    sed -i "s/post_max_size\ =\ 8M/post_max_size\ =\ ${str_postMax}M/" "${str_phpIniFile}"
+    sed -i "s/upload_max_filesize\ =\ 2M/upload_max_filesize\ =\ ${str_uploadMax}M/" "${str_phpIniFile}"
+    grep -i "post_max_size\|upload_max_filesize" "${str_phpIniFile}"
+}
+############################
+
 fun_configApacheModules() {
 
     # Make sure Apache SSL model is enabled
@@ -1620,6 +1631,7 @@ case "${str_g_command}" in
 
     --test)
         # Test
+        fun_changePhpIniSettings
         ;;
 
     --addwebuser)
@@ -1633,8 +1645,16 @@ case "${str_g_command}" in
         fun_deleteUserAccount
         ;;
 
+    --aareload)
+        fun_reloadAA-Apache
+        ;;
+
     --status)
         fun_checkAllServicesStatus
+        ;;
+
+    '-v'|'v'|'version'|'--version')
+        echo -e "${color_BICyan}Diamond Hard LAMP:${color_WHITE} ${str_g_version}${color_NC}"
         ;;
 
     '-h'|'h'|'?'|'help'|'--help')

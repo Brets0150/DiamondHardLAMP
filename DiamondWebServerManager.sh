@@ -28,7 +28,7 @@ str_g_version='1.0-beta'
 str_g_scriptsDir="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 # Config file location and name.
-str_g_settings_file_name="${str_g_scriptsDir}/settings_mine.sh"
+str_g_settings_file_name="${str_g_scriptsDir}/settings.sh"
 
 # This scripts log file.
 str_g_logFile="${str_g_scriptsDir}/dhl_install_log.txt"

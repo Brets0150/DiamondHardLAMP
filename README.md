@@ -11,17 +11,51 @@ Over the years I have built scripts to automate my roles as a Linux System Admin
 
 # 
 
-## DHL Build Out Process
+# DHL Build Out Process
+**Overview**
 
+Steps
 1. Build a new Vitual Machine
 2. Clone DHL GitHub codebase
 3. Configure Your Unique Server Settings
 4. Run DHL installer
 5. Add your first webhosting account
 
-## Hardening Tools and Configurations
+## DHL Build Out - Step 1
+DHL was built for the most recent versions of Ubuntu; 20.04 and 21.04. Either 20.04 or 21.04 will work, but I would recommend the newest version. I would recommend the following as the minimum settings for your VM.
+- 4x CPU cores
+- 8 GB RAM
+- 8 GB Swap space(This needs to match your RAM amount)
+- 32 GB Disk Space, This really depends on how much data you want to store.
+- 1x WAN(Internet) IPv4 Address
 
-### Services & Security Tools Include 
+If you decide to use a Proxmox container, enable Nesting, and it has to be Unprivileged.
+
+##  DHL Build Out - Step 2 to 4
+Run the below command to install DHL.
+```bash
+# On a fresh install you will need the git package before you get going. 
+sudo apt update && sudo apt -y install git
+
+# Clone the DHL repo
+git clone https://github.com/Brets0150/DiamondHardLAMP.git
+
+cd  ./DiamondHardLAMP
+chmod +x DiamondWebServerManager.sh
+
+# Update the settings file with the variable and systems settings. This MUST be updated!
+nano ./settings.sh
+
+# Install and build a full DHL LAMP stack. 
+./DiamondWebServerManager.sh --install
+```
+
+
+# 
+
+# Hardening Tools and Configurations
+
+## Services & Security Tools Include 
  - Apache latest
  - MariaDB latest
  - PHP 7.x latest
@@ -34,7 +68,7 @@ Over the years I have built scripts to automate my roles as a Linux System Admin
  - LetsEncrypt CertBot
  - ClamAV
 
-  ### Security Configuration  
+## Security Configuration  
 - Each Apache Website runs in its own sandbox via AppArmor.
 - Each Apache Website runs under its own user account; mpm-itk module.
 - Apache configured to not leak any data about itself.

@@ -22,14 +22,14 @@ Steps
 5. Add your first webhosting account
 
 ## DHL Build Out - Step 1
-DHL was built for the most recent versions of Ubuntu; 20.04 and 21.04. Either 20.04 or 21.04 will work, but I would recommend the newest version. I would recommend the following as the minimum settings for your VM.
+DHL is built for the most recent Long Terms Support(LTS) version of Ubuntu; 20.04 LTS. I recommend the following as the minimum settings for your VM.
 - 4x CPU cores
 - 8 GB RAM
 - 8 GB Swap space(This needs to match your RAM amount)
 - 32 GB Disk Space, This really depends on how much data you want to store.
 - 1x WAN(Internet) IPv4 Address
 
-If you decide to use a Proxmox container, enable Nesting, and it has to be Unprivileged.
+Note: AppArmor cannot run appropriately inside a container. Additionally, containers are considered less secure than the segmentation VMs provide. For these reasons, DHL requires a VM and not a container.
 
 ##  DHL Build Out - Step 2 to 4
 Run the below command to install DHL.
@@ -88,3 +88,4 @@ nano ./settings.sh
 - Updates are done automatically. If an upgrade requires a reboot, the Admin is emailed to it.
 - Configure the firewall only to allow ports 22, 80, and 443 from any destination. All incoming traffic is dropped.
 - Check and configure hostname correctly.
+# 

@@ -101,6 +101,8 @@ fun_checkAndImportSettings() {
 ############################
 
 fun_diamondLampLogo() {
+    # This big scary-looking blob of code is DHL's logo. It looks odd because of the terminal color syntax needed.
+    # It's just here to show off, lol. Why spend hours coding cool stuff if you cannot show off a little?
    echo -e "    +------------------------------------------------------------+
     |[0m[38;2;245;245;245mW[0m[38;2;244;244;244mW[0m[38;2;245;245;245mW[0m[38;2;245;245;245mW[0m[38;2;246;246;246mW[0m[38;2;244;244;244mW[0m[38;2;244;244;244mW[0m[38;2;245;245;245mW[0m[38;2;246;246;246mW[0m[38;2;245;245;245mW[0m[38;2;246;246;246mW[0m[38;2;245;245;245mW[0m[38;2;246;246;246mW[0m[38;2;246;246;246mW[0m[38;2;245;245;245mW[0m[38;2;246;246;246mW[0m[38;2;245;245;245mW[0m[38;2;245;245;245mW[0m[38;2;245;245;245mW[0m[38;2;245;245;245mW[0m[38;2;247;247;247mW[0m[38;2;244;244;244mW[0m[38;2;245;245;245mW[0m[38;2;245;245;245mW[0m[38;2;245;245;245mW[0m[38;2;245;245;245mW[0m[38;2;154;154;154md[0m[38;2;238;238;238mW[0m[38;2;244;244;244mW[0m[38;2;247;247;247mW[0m[38;2;246;246;246mW[0m[38;2;245;245;245mW[0m[38;2;241;241;241mW[0m[38;2;154;154;154md[0m[38;2;245;245;245mW[0m[38;2;246;246;246mW[0m[38;2;244;244;244mW[0m[38;2;245;245;245mW[0m[38;2;245;245;245mW[0m[38;2;244;244;244mW[0m[38;2;245;245;245mW[0m[38;2;245;245;245mW[0m[38;2;246;246;246mW[0m[38;2;245;245;245mW[0m[38;2;246;246;246mW[0m[38;2;245;245;245mW[0m[38;2;245;245;245mW[0m[38;2;246;246;246mW[0m[38;2;244;244;244mW[0m[38;2;245;245;245mW[0m[38;2;246;246;246mW[0m[38;2;245;245;245mW[0m[38;2;244;244;244mW[0m[38;2;245;245;245mW[0m[38;2;245;245;245mW[0m[38;2;246;246;246mW[0m[38;2;245;245;245mW[0m[38;2;245;245;245mW[0m[38;2;245;245;245mW[0m[38;2;246;246;246mW[0m|
     |[0m[38;2;245;245;245mW[0m[38;2;245;245;245mW[0m[38;2;245;245;245mW[0m[38;2;246;246;246mW[0m[38;2;245;245;245mW[0m[38;2;246;246;246mW[0m[38;2;245;245;245mW[0m[38;2;245;245;245mW[0m[38;2;246;246;246mW[0m[38;2;244;244;244mW[0m[38;2;246;246;246mW[0m[38;2;244;244;244mW[0m[38;2;246;246;246mW[0m[38;2;243;243;243mW[0m[38;2;246;246;246mW[0m[38;2;245;245;245mW[0m[38;2;246;246;246mW[0m[38;2;245;245;245mW[0m[38;2;246;246;246mW[0m[38;2;231;231;231mN[0m[38;2;153;153;153md[0m[38;2;213;213;213mK[0m[38;2;245;245;245mW[0m[38;2;246;246;246mW[0m[38;2;244;244;244mW[0m[38;2;244;244;244mW[0m[38;2;161;161;161mx[0m[38;2;183;183;183mO[0m[38;2;244;244;244mW[0m[38;2;246;246;246mW[0m[38;2;244;244;244mW[0m[38;2;246;246;246mW[0m[38;2;191;191;191m0[0m[38;2;157;157;157mx[0m[38;2;245;245;245mW[0m[38;2;247;247;247mW[0m[38;2;245;245;245mW[0m[38;2;244;244;244mW[0m[38;2;218;218;218mX[0m[38;2;150;150;150md[0m[38;2;229;229;229mN[0m[38;2;244;244;244mW[0m[38;2;247;247;247mW[0m[38;2;244;244;244mW[0m[38;2;246;246;246mW[0m[38;2;245;245;245mW[0m[38;2;246;246;246mW[0m[38;2;244;244;244mW[0m[38;2;245;245;245mW[0m[38;2;245;245;245mW[0m[38;2;247;247;247mW[0m[38;2;245;245;245mW[0m[38;2;246;246;246mW[0m[38;2;245;245;245mW[0m[38;2;245;245;245mW[0m[38;2;245;245;245mW[0m[38;2;244;244;244mW[0m[38;2;247;247;247mW[0m[38;2;245;245;245mW[0m[38;2;246;246;246mW[0m|
@@ -133,6 +135,8 @@ fun_diamondLampLogo() {
 ############################
 
 fun_cgLogo() {
+    # This big scary-looking blob of code is my awesome logo. It looks odd because of the terminal color syntax needed.
+    # It's just here to show off, lol. Why spend hours coding cool stuff if you cannot show off a little?
     clear
     echo -e "    +--------------------------------------------------------------------------------+
     |[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;247;251;253mM[0m[38;2;219;240;252mN[0m[38;2;193;230;252mX[0m[38;2;173;221;251mK[0m[38;2;161;216;252mK[0m[38;2;155;214;253m0[0m[38;2;154;214;254m0[0m[38;2;154;214;253m0[0m[38;2;155;214;252m0[0m[38;2;159;216;253mK[0m[38;2;172;221;252mK[0m[38;2;193;230;252mX[0m[38;2;218;240;252mN[0m[38;2;244;250;252mW[0m[38;2;254;255;254mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m[38;2;255;255;255mM[0m|
@@ -259,7 +263,7 @@ fun_addNewAccount() {
     str_clearTextSftpPW="$(fun_newPasswordGen)"
     str_encryptedPW="$(perl -e 'print crypt($ARGV[0], "password")' ${str_clearTextSftpPW})"
     (useradd -m -p "${str_encryptedPW}" "${str_userName}") >/dev/null 2>&1
-    # usermod -a -G "${str_g_webGroup}" "${str_userName}"
+    usermod -a -G "${str_g_webGroup}" "${str_userName}"
     usermod -a -G "${str_g_sftpGroup}" "${str_userName}"
     usermod -s /bin/false "${str_userName}"
     chown -R root. "/home/${str_userName}" && chmod -R 755 "/home/${str_userName}"
@@ -267,7 +271,8 @@ fun_addNewAccount() {
     touch "/home/${str_userName}/YouCanOnlyUseTheWwwrootFolder.fyi"
     touch "/home/${str_userName}/ToLockAFolderFromPublicVeiwCopyThe-.htaccess-FileIntoTheFolder.fyi"
     mkdir "/home/${str_userName}/wwwroot" && chown -R "${str_userName}:${str_userName}" "/home/${str_userName}/wwwroot" && chmod -R 2755 "/home/${str_userName}/wwwroot"
-    mkdir "/home/${str_userName}/logs" && chown -R "${str_userName}." "/home/${str_userName}/logs" && chmod -R 2770 "/home/${str_userName}/logs"
+    mkdir "/home/${str_userName}/logs" && chown -R "${str_userName}." "/home/${str_userName}/logs" && chmod -R 0660 "/home/${str_userName}/logs"
+    mkdir "/home/${str_userName}/.ModSecurity" && chown -R "www-data:${str_userName}" "/home/${str_userName}/.ModSecurity" && chmod -R 1733 "/home/${str_userName}/.ModSecurity"
     touch "/home/${str_userName}/logs/${str_domainName}_modsec.log"
     mkdir "/home/${str_userName}/ssl" && chown root. "/home/${str_userName}/ssl" && chmod -R 700 "/home/${str_userName}/ssl"
     echo "It's Works" >> "/home/${str_userName}/wwwroot/index.html"
@@ -354,95 +359,132 @@ fun_addNewAccount() {
     echo "<h1>Bonk! Something went wrong...</h1> > /var/www/html/custom_50x.html
     <p>Hmm.. We seem to be having some technical difficulties. Hang tight.</p>" > "/home/${str_userName}/wwwroot/custom_50x.html"
     ##
-    echo "
-    # HTTP site Config for ${str_domainName}
-    <VirtualHost *:80>
-        ServerAdmin admin@${str_domainName}
-        ServerName ${str_domainName}
-        ServerAlias www.${str_domainName}
-        DocumentRoot /home/${str_userName}/wwwroot/
-        SecRuleEngine On
-        RewriteEngine On
-        RewriteCond %{HTTPS} off [OR]
-        RewriteCond \"%{HTTP_HOST}\" \"^www\.\" [NC]
-        RewriteCond \"%{HTTP_HOST}\" \"!^$\"
-        RewriteRule \"^/?(.*)\"      \"https://%{HTTP_HOST}/\$1\" [L,R=301,NE]
-        <IfModule mpm_itk_module>
-            AssignUserId ${str_userName} ${str_userName}
-        </IfModule>
-        <Directory /home/${str_userName}/wwwroot/>
-            AllowOverride All
-            Require all granted
-            AAHatName ${str_domainName}-a2
-        </Directory>
-        LogLevel warn
-        SecAuditLog /home/${str_userName}/logs/${str_domainName}_modsec.log
-        ErrorLog /home/${str_userName}/logs/${str_domainName}_error.log
-        CustomLog /home/${str_userName}/logs/${str_domainName}_access.log combined
-    </VirtualHost>
-    # HTTPS site Config for ${str_domainName}
-    <IfModule mod_ssl.c>
-        <VirtualHost _default_:443>
-            ServerAdmin admin@${str_domainName}
-            ServerName ${str_domainName}
-            ServerAlias www.${str_domainName}
-            DocumentRoot /home/${str_userName}/wwwroot/
-            SecRuleEngine On
-            SSLStrictSNIVHostCheck on
-            <IfModule mpm_itk_module>
-                AssignUserId ${str_userName} ${str_userName}
-            </IfModule>
-            <Directory /home/${str_userName}/wwwroot/>
-                AllowOverride All
-                Require all granted
-                AAHatName ${str_domainName}-a2
-            </Directory>
-            # enable HTTP/2, if available
-            ProtocolsHonorOrder on
-            Protocols h2 h2c http/1.1
-            # HTTP Strict Transport Security (mod_headers is required) (63072000 seconds)
-            Header always set Strict-Transport-Security \"max-age=63072000\"
-            SSLEngine on
-            SSLCertificateFile /home/${str_userName}/ssl/${str_domainName}.crt
-            SSLCertificateKeyFile /home/${str_userName}/ssl/${str_domainName}.key
-            <FilesMatch \"\.(cgi|shtml|phtml|php)$\">
-                SSLOptions +StdEnvVars
-            </FilesMatch>
-            <Directory /usr/lib/cgi-bin>
-                SSLOptions +StdEnvVars
-            </Directory>
-            LogLevel warn
-            SecAuditLog /home/${str_userName}/logs/${str_domainName}_modsec.log
-            ErrorLog /home/${str_userName}/logs/${str_domainName}_error.log
-            CustomLog /home/${str_userName}/logs/${str_domainName}_access.log combined
-        </VirtualHost>
-    </IfModule>" > "${str_apacheConfigFile}"
+    echo -e "# HTTP site Config for ${str_domainName}\n" \
+    "<VirtualHost *:80>\n" \
+    "	ServerAdmin admin@${str_domainName}\n" \
+    "	ServerName ${str_domainName}\n" \
+    "	ServerAlias www.${str_domainName}\n" \
+    "	AADefaultHatName ${str_domainName}-a2\n" \
+    "	DocumentRoot /home/${str_userName}/wwwroot/\n" \
+    "	#\n" \
+    "	RewriteEngine On\n" \
+    "	RewriteCond %{HTTPS} off [OR]\n" \
+    "	RewriteCond \"%{HTTP_HOST}\" \"^www\.\" [NC]\n" \
+    "	RewriteCond \"%{HTTP_HOST}\" \"!^$\"\n" \
+    "	RewriteRule \"^/?(.*)\"      \"https://%{HTTP_HOST}/\$1\" [L,R=301,NE]\n" \
+    "	#\n" \
+    "	<IfModule mpm_itk_module>\n" \
+    "		AssignUserId ${str_userName} ${str_userName}\n" \
+    "	</IfModule>\n" \
+    "	#\n" \
+    "	<IfModule security2_module>\n" \
+    "		SecRuleEngine On\n" \
+    "		SecTmpDir /home/${str_userName}/.ModSecurity\n" \
+    "		SecUploadDir /home/${str_userName}/.ModSecurity\n" \
+    "		SecAuditLogStorageDir /home/${str_userName}/.ModSecurity\n" \
+    "		SecAuditLogType Concurrent\n" \
+    "		SecAuditLogDirMode 1733\n" \
+    "		SecAuditLogFileMode 0550\n" \
+    "	</IfModule>\n" \
+    "	#\n" \
+    "	<Directory /home/${str_userName}/wwwroot/>\n" \
+    "		AllowOverride All\n" \
+    "		Require all granted\n" \
+    "		AAHatName ${str_domainName}-a2\n" \
+    "	</Directory>\n" \
+    "	#\n" \
+    "	LogLevel warn\n" \
+    "	SecAuditLog /home/${str_userName}/logs/${str_domainName}_modsec.log\n" \
+    "	ErrorLog /home/${str_userName}/logs/${str_domainName}_error.log\n" \
+    "	CustomLog /home/${str_userName}/logs/${str_domainName}_access.log combined\n" \
+    "</VirtualHost>\n" \
+    "##\n" \
+    "# HTTPS site Config for ${str_domainName}\n" \
+    "<IfModule mod_ssl.c>\n" \
+    "	<VirtualHost _default_:443>\n" \
+    "		ServerAdmin admin@${str_domainName}\n" \
+    "		ServerName ${str_domainName}\n" \
+    "		ServerAlias www.${str_domainName}\n" \
+    "		AADefaultHatName ${str_domainName}-a2\n" \
+    "		DocumentRoot /home/${str_userName}/wwwroot/\n" \
+    "		#\n" \
+    "		<IfModule mpm_itk_module>\n" \
+    "			AssignUserId ${str_userName} ${str_userName}\n" \
+    "		</IfModule>\n" \
+    "		#\n" \
+    "		<IfModule security2_module>\n" \
+    "			SecRuleEngine On\n" \
+    "			SecTmpDir /home/${str_userName}/.ModSecurity\n" \
+    "			SecUploadDir /home/${str_userName}/.ModSecurity\n" \
+    "			SecAuditLogStorageDir /home/${str_userName}/.ModSecurity\n" \
+    "			SecAuditLogType Concurrent\n" \
+    "			SecAuditLogDirMode 1733\n" \
+    "		SecAuditLogFileMode 0550\n" \
+    "		</IfModule>\n" \
+    "		#\n" \
+    "		<Directory /home/${str_userName}/wwwroot/>\n" \
+    "			AllowOverride All\n" \
+    "			Require all granted\n" \
+    "			AAHatName ${str_domainName}-a2\n" \
+    "		</Directory>\n" \
+    "		#\n" \
+    "		# Enable HTTP/2, if available\n" \
+    "		ProtocolsHonorOrder on\n" \
+    "		Protocols h2 h2c http/1.1\n" \
+    "		#\n" \
+    "		# HTTP Strict Transport Security (mod_headers is required) (63072000 seconds)\n" \
+    "		Header always set Strict-Transport-Security \"max-age=63072000\"\n" \
+    "		#\n" \
+    "		# SSL Settings and Options\n" \
+    "		SSLEngine on\n" \
+    "		SSLStrictSNIVHostCheck on\n" \
+    "		SSLCertificateFile /home/${str_userName}/ssl/${str_domainName}.crt\n" \
+    "		SSLCertificateKeyFile /home/${str_userName}/ssl/${str_domainName}.key\n" \
+    "		#\n" \
+    "		<FilesMatch \"\.(cgi|shtml|phtml|php)$\">\n" \
+    "			SSLOptions +StdEnvVars\n" \
+    "		</FilesMatch>\n" \
+    "		#\n" \
+    "		<Directory /usr/lib/cgi-bin>\n" \
+    "			SSLOptions +StdEnvVars\n" \
+    "		</Directory>\n" \
+    "		#\n" \
+    "		# Logging Settings\n" \
+    "		LogLevel warn\n" \
+    "		SecAuditLog /home/${str_userName}/logs/${str_domainName}_modsec.log\n" \
+    "		ErrorLog /home/${str_userName}/logs/${str_domainName}_error.log\n" \
+    "		CustomLog /home/${str_userName}/logs/${str_domainName}_access.log combined\n" \
+    "		#\n" \
+    "	</VirtualHost>\n" \
+    "</IfModule>"> "${str_apacheConfigFile}"
     ############################
     # Create the AppArmor Config
     # AppArmor and Apache must be configured and the new site enabled BEFORE we can have LetsEncrypt issue a SSL cert!
-    echo "
-    ^${str_domainName}-a2 flags=(attach_disconnected){
-    #include <abstractions/apache2-common>
-    #include <abstractions/base>
-    #include <abstractions/php>
-    # Allow Read-Write Access to main Web DIR
-    /home/${str_userName}/wwwroot/** rw,
-    # Allow Read-only access for authenticating .htaccess
-    /home/${str_userName}/.secret/.htpasswd r,
-    /etc/apache2/.secret/.htpasswd r,
-    /var/lib/letsencrypt/http_challenges/** r,
-    #  Allow Write-only Access log files
-    /home/${str_userName}/logs/${str_domainName}_access.log w,
-    /home/${str_userName}/logs/${str_domainName}_error.log w,
-    /home/${str_userName}/logs/${str_domainName}_modsec.log w,
-    # Allow Read-Write Access to MySQL service
-    /run/mysqld/mysqld.sock wr,
-    # Deny Access to Data leaking files.
-    deny /home/${str_userName}/wwwroot/{Changelog,LICENSE,README,RELEASE-DATE-*,CONTRIBUTING.md,composer.*} r,
-    # Deny access to Bash/sh
-    deny /bin/bash r,
-    deny /bin/sh r,
-    }" > "/etc/apparmor.d/apache2.d/${str_domainName}-a2"
+    echo -e "  ^${str_domainName}-a2 flags=(attach_disconnected) {\n" \
+    "    #include <abstractions/apache2-common>\n" \
+    "    #include <abstractions/base>\n" \
+    "    #include <abstractions/php>\n" \
+    "    # Allow Read-Write Access to main Web DIR\n" \
+    "    /home/${str_userName}/wwwroot/** wr,\n" \
+    "    # Allow Read-only access for authenticating .htaccess\n" \
+    "    /home/${str_userName}/.secret/.htpasswd r,\n" \
+    "    /etc/apache2/.secret/.htpasswd r,\n" \
+    "    # Operational Required Access\n" \
+    "    /var/lib/letsencrypt/http_challenges/** r,\n" \
+    "    /opt/modsecurity/var/data/${str_userName}** wrk,\n" \
+    "    /home/${str_userName}/.ModSecurity/** wr,\n" \
+    "    # Allow Write-only Access log files\n" \
+    "    /home/${str_userName}/logs/${str_domainName}_access.log w,\n" \
+    "    /home/${str_userName}/logs/${str_domainName}_error.log w,\n" \
+    "    /home/${str_userName}/logs/${str_domainName}_modsec.log w,\n" \
+    "    # Allow Read-Write Access to MySQL service\n" \
+    "    /run/mysqld/mysqld.sock wr,\n" \
+    "    # Deny Access to Data leaking files.\n" \
+    "    deny /home/${str_userName}/wwwroot/{Changelog,LICENSE,README,RELEASE-DATE-*,CONTRIBUTING.md,composer.*} r,\n" \
+    "    # Deny access to Bash/sh\n" \
+    "    deny /bin/bash r,\n" \
+    "    deny /bin/sh r,\n" \
+    "  }" > "/etc/apparmor.d/apache2.d/${str_domainName}-a2"
     # Parse and Enable the new AppArmor Config.
     fun_priorityCMD "apparmor_parser -r /etc/apparmor.d/usr.sbin.apache2" "Apache's AppArmor profile enforced"
     # Enable the new website config file.
@@ -565,6 +607,20 @@ fun_modSecure_install() {
     fi
     # Check the needed modules are installed.
     fun_configApacheModules
+    # Build ModSec Dir structure.
+    /usr/bin/mkdir -p /opt/modsecurity/var/upload
+    /usr/bin/chmod -R 700 /opt/modsecurity/var/upload
+    /usr/bin/chown -R www-data:root /opt/modsecurity/var/upload
+    /usr/bin/mkdir -p /opt/modsecurity/var/tmp
+    /usr/bin/chown -R root:www-data /opt/modsecurity/var/tmp
+    /usr/bin/chmod -R 750 /opt/modsecurity/var/tmp
+    /usr/bin/mkdir -p /opt/modsecurity/var/data
+    /usr/bin/chown -R www-data:www-data/opt/modsecurity/var/data
+    /usr/bin/chmod -R 1733 /opt/modsecurity/var/data
+    # Update ModSec Config with default Dirs
+    /usr/bin/sed -i 's/.*SecTmpDir.*/SecTmpDir\ \/opt\/modsecurity\/var\/tmp/' /etc/modsecurity/modsecurity.conf
+    /usr/bin/sed -i 's/.*SecDataDir.*/SecDataDir\ \/opt\/modsecurity\/var\/data/' /etc/modsecurity/modsecurity.conf
+    /usr/bin/sed -i 's/.*SecUploadDir.*/SecUploadDir\ \/opt\/modsecurity\/var\/upload/' /etc/modsecurity/modsecurity.conf
     # Restart Apache
     fun_priorityCMD "systemctl restart apache2.service" "Apache service restart for ModSec" 0
     # Confirm the ModSecurity Module is loaded.
@@ -819,77 +875,111 @@ fun_apparmorInstall() {
 
 fun_phpmyadminApparmor() {
     # Install PhpMyAdmin site config.
-    echo '^phpmyadmin-a2 flags=(attach_disconnected) {
-    #include <abstractions/apache2-common>
-    #include <abstractions/base>
-    #include <abstractions/php>
-    capability setuid,
-    capability setgid,
-    # Allow writting to Logs
-    /var/log/apache2/access.log w,
-    /var/log/apache2/error.log w,
-    /home/*/logs/*_error.log w,
-    /home/*/logs/*_access.log w,
-    /home/*/logs/*_modsec.log w,
-    # Allow Socket Access
-    /run/php/php7.4-fpm-www-phpmyadmin.sock wr,
-    # Access to standard PHPMyAdmin files
-    /usr/share/phpmyadmin/** r,
-    /usr/share/php/** r,
-    /etc/apache2/.secret/.htpasswd r,
-    # Deny access to sensitive folders
-    deny /usr/share/phpmyadmin/setup/** r,
-    deny /usr/share/phpmyadmin/examples/** r,
-    deny /usr/share/phpmyadmin/{Changelog,LICENSE,README,RELEASE-DATE-*,CONTRIBUTING.md,composer.*} r,
-    deny /var/www/** r,
-    # Deny access to Bash/sh
-    deny /bin/bash r,
-    deny /bin/sh r,
-    }' > /etc/apparmor.d/apache2.d/phpmyadmin-a2
-    echo '
-    <IfModule mod_apparmor.c>
-            <Location /phpmyadmin>
-                    AAHatName phpmyadmin-a2
-            </Location>
-    </IfModule>
-    ' >> /etc/apache2/conf-enabled/phpmyadmin.conf
+    echo -e '  ^phpmyadmin-a2 flags=(attach_disconnected) {\n' \
+    '    #include <abstractions/apache2-common>\n' \
+    '    #include <abstractions/base>\n' \
+    '    #include <abstractions/php>\n' \
+    '    capability setuid,\n' \
+    '    capability setgid,\n' \
+    '    # Allow writting to Logs\n' \
+    '    /var/log/apache2/access.log w,\n' \
+    '    /var/log/apache2/error.log w,\n' \
+    '    /home/*/logs/*_error.log w,\n' \
+    '    /home/*/logs/*_access.log w,\n' \
+    '    /home/*/logs/*_modsec.log w,\n' \
+    '    # Allow Socket Access\n' \
+    '    /run/php/php7.4-fpm-www-phpmyadmin.sock wr,\n' \
+    '    /run/mysqld/mysqld.sock wr,\n' \
+    '    # Access to standard PHPMyAdmin files\n' \
+    '    /etc/apache2/.secret/.htpasswd r,\n' \
+    '    /usr/share/phpmyadmin/** r,\n' \
+    '    /usr/share/php/** r,\n' \
+    '    /etc/phpmyadmin/** r,\n' \
+    '    /var/lib/phpmyadmin/** wr,\n' \
+    '    /var/lib/phpmyadmin/tmp/** wr,\n' \
+    '    # Allow access needed due to ModSec and mpm_itk_module\n' \
+    '    /tmp/** wr,\n' \
+    '    /home/*/.ModSecurity/** wr,\n' \
+    '    # Deny access to sensitive folders\n' \
+    '    deny /usr/share/phpmyadmin/setup/** r,\n' \
+    '    deny /usr/share/phpmyadmin/examples/** r,\n' \
+    '    deny /usr/share/phpmyadmin/{Changelog,LICENSE,README,RELEASE-DATE-*,CONTRIBUTING.md,composer.*} r,\n' \
+    '    deny /var/www/** r,\n' \
+    '    # Deny access to Bash/sh\n' \
+    '    deny /bin/bash r,\n' \
+    '    deny /bin/sh r,\n' \
+    '  }' > /etc/apparmor.d/apache2.d/phpmyadmin-a2
+    ##
+    # Update the Apache Config. The default will not work right with ModSec and mpm_itk_module installed.
+    echo -e '# phpMyAdmin default Apache configuration\n' \
+    'Alias /phpmyadmin /usr/share/phpmyadmin\n' \
+    '<Directory /usr/share/phpmyadmin>\n' \
+    '   Options SymLinksIfOwnerMatch\n' \
+    '   DirectoryIndex index.php\n' \
+    '   AllowOverride AuthConfig\n' \
+    '   SecRuleEngine Off\n' \
+    '   AAHatName phpmyadmin-a2\n' \
+    '   # limit libapache2-mod-php to files and directories necessary by pma\n' \
+    '   <IfModule mod_php7.c>\n' \
+    '       php_admin_value upload_tmp_dir /var/lib/phpmyadmin/tmp\n' \
+    '       php_admin_value open_basedir /tmp:/usr/share/phpmyadmin/:/etc/phpmyadmin/:/var/lib/phpmyadmin/:/usr/share/php/php-gettext/:/usr/share/php/php-php-gettext/:/usr/share/javascript/:/usr/share/php/tcpdf/:/usr/share/doc/phpmyadmin/:/usr/share/php/phpseclib/:/usr/share/php/PhpMyAdmin/:/usr/share/php/Symfony/:/usr/share/php/Twig/:/usr/share/php/Twig-Extensions/:/usr/share/php/ReCaptcha/:/usr/share/php/Psr/Container/:/usr/share/php/Psr/Cache/:/usr/share/php/Psr/Log/:/usr/share/php/Psr/SimpleCache/\n' \
+    '   </IfModule>\n' \
+    '</Directory>\n' \
+    '# Disallow web access to directories that dont need it\n' \
+    '<Directory /usr/share/phpmyadmin/templates>\n' \
+    '   Require all denied\n' \
+    '</Directory>\n' \
+    '<Directory /usr/share/phpmyadmin/libraries>\n' \
+    '   Require all denied\n' \
+    '</Directory>' > /etc/apache2/conf-enabled/phpmyadmin.conf
+    ##
 }
 ############################
 
 fun_apacheApparmorConfig() {
-    echo '
-    # Last Modified: Mon Nov 15 14:46:06 2021
-    #include <tunables/global>
-    profile apache2 /usr/{bin,sbin}/apache2 flags=(attach_disconnected) {
-    #include <abstractions/base>
-    #include <abstractions/nameservice>
-    #include <apache2.d>
-    #include <local/usr.sbin.apache2>
-    capability dac_override,
-    capability dac_read_search,
-    capability kill,
-    capability net_bind_service,
-    capability setgid,
-    capability setuid,
-    capability sys_tty_config,
-    signal send peer=@{profile_name}//*,
-    / rw,
-    /** mrwlkix,
-
-    ^DEFAULT_URI flags=(attach_disconnected) {
-        #include <abstractions/apache2-common>
-        #include <abstractions/base>
-        / rw,
-        /** mrwlkix,
-    }
-    ^HANDLING_UNTRUSTED_INPUT flags=(attach_disconnected) {
-        #include <abstractions/apache2-common>
-        #include <abstractions/dovecot-common>
-        #include <abstractions/postfix-common>
-        / rw,
-        /** mrwlkix,
-    }
-    }' > /etc/apparmor.d/usr.sbin.apache2
+    echo -e '# Last Modified: Tue Dec  7 16:27:34 2021\n' \
+    '#include <tunables/global>\n' \
+    '\n' \
+    'profile apache2 /usr/{bin,sbin}/apache2 flags=(attach_disconnected) {\n' \
+    '  #include <abstractions/base>\n' \
+    '  #include <abstractions/nameservice>\n' \
+    '  #include <apache2.d>\n' \
+    '  #include <local/usr.sbin.apache2>\n' \
+    '\n' \
+    '  capability dac_override,\n' \
+    '  capability dac_read_search,\n' \
+    '  capability kill,\n' \
+    '  capability net_bind_service,\n' \
+    '  capability setgid,\n' \
+    '  capability setuid,\n' \
+    '  capability sys_admin,\n' \
+    '  capability sys_tty_config,\n' \
+    '\n' \
+    '  signal send peer=@{profile_name}//*,\n' \
+    '\n' \
+    '  / rw,\n' \
+    '  /** mrwlkix,\n' \
+    '\n' \
+    '\n' \
+    '  ^DEFAULT_URI flags=(attach_disconnected, complain) {\n' \
+    '    #include <abstractions/apache2-common>\n' \
+    '    #include <abstractions/base>\n' \
+    '\n' \
+        '/ rw,\n' \
+    '    /** mrwlkix,\n' \
+    '\n' \
+    '  }\n' \
+    '\n' \
+    '  ^HANDLING_UNTRUSTED_INPUT flags=(attach_disconnected, complain) {\n' \
+    '    #include <abstractions/apache2-common>\n' \
+    '    #include <abstractions/dovecot-common>\n' \
+    '    #include <abstractions/postfix-common>\n' \
+    '\n' \
+        '/ rw,\n' \
+    '    /** mrwlkix,\n' \
+    '\n' \
+    '  }\n' \
+    '}' > /etc/apparmor.d/usr.sbin.apache2
 }
 ############################
 
@@ -1496,12 +1586,12 @@ fun_configApacheModules() {
     fi
 
     # Make the libapache2-mpm-itk Module is enabled.
-    # if [ -f /etc/apache2/mods-enabled/mpm_itk.load ] ; then
-    #     echo -e "${color_GREEN}Multi-Processing Module already running${color_NC}" | tee -a -i "${str_g_logFile}"
-    # else
-    #     echo "Multi-Processing Module is off, Turning on.."
-    #     fun_priorityCMD "a2enmod mpm_itk" "Multi-Processing Module enable"
-    # fi
+    if [ -f /etc/apache2/mods-enabled/mpm_itk.load ] ; then
+        echo -e "${color_GREEN}Multi-Processing Module already running${color_NC}" | tee -a -i "${str_g_logFile}"
+    else
+        echo "Multi-Processing Module is off, Turning on.."
+        fun_priorityCMD "a2enmod mpm_itk" "Multi-Processing Module enable"
+    fi
 
     # Make the Headers Module is enabled.
     if [ -f /etc/apache2/mods-enabled/headers.load ] ; then
@@ -1631,7 +1721,6 @@ case "${str_g_command}" in
 
     --test)
         # Test
-        fun_changePhpIniSettings
         ;;
 
     --addwebuser)

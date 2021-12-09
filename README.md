@@ -1,5 +1,3 @@
-# Work in Progress - DHL not done at this time.
-
 # Diamond Hard LAMP
 
 ![DiamondHardLAMP Logo](https://cybergladius.com/wp-content/uploads/2021/11/logo_2_small.png)
@@ -73,7 +71,7 @@ nano ./settings.sh
 - Each Apache Website runs under its own user account; mpm-itk module.
 - Apache configured to not leak any data about itself.
 - Apache Module mod_headers installed. Allows ModSecurity modify HTTP request and response headers, stops threats.
-- ModSecurity configured to most up-to-date and best free rules sets.
+- ModSecurity configured to most up-to-date with Core Rule Set.
 - MariaDB has all the baseline security configured. 
 - ".htaccess" protects the PhpMyAdmin web UI, adding another layer of protection.
 - All ".htaccess" passwords are stored with the highest BCrypt hashing. Brute-Force cracking is not practical.

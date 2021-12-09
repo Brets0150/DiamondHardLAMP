@@ -11,7 +11,7 @@
 # Note:
 ##
 # Version Change Notes.
-# 1.0 - Done main purpose of script. Sites working well no known issues.
+# 1.0-beta - Done main purpose of script. Sites working well no known issues.
 ##
 # Issues to Fix
 #
@@ -28,10 +28,10 @@ str_g_version='1.0-beta'
 str_g_scriptsDir="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 # Config file location and name.
-str_g_settings_file_name="${str_g_scriptsDir}/settings.sh"
+str_g_settings_file_name="${str_g_scriptsDir}/settings_mine.sh"
 
 # This scripts log file.
-str_g_logFile="${str_g_scriptsDir}/dhl_install_log.txt"
+str_g_logFile="${str_g_scriptsDir}/.dhl_install_log.txt"
 
 #######################
 #### Start Script #####
@@ -602,8 +602,13 @@ fun_modSecure_install() {
     git clone "${str_g_modsecGitUrl}" /usr/share/modsecurity-crs
     cp /usr/share/modsecurity-crs/crs-setup.conf.example /usr/share/modsecurity-crs/crs-setup.conf
     if [ -z "$(grep "IncludeOptional /usr/share/modsecurity-crs/*.conf" /etc/apache2/mods-available/security2.conf | tr -d ' ')" ]; then
-        sed -ie "s/<\/IfModule>/\\tIncludeOptional\ \/usr\/share\/modsecurity-crs\/*.conf\n\tIncludeOptional \/usr\/share\/modsecurity-crs\/rules\/*.conf\\n\<\/IfModule\>/g"\
-         /etc/apache2/mods-available/security2.conf
+        echo -e "<IfModule security2_module>\n" \
+        "IncludeOptional /etc/modsecurity/*.conf\n" \
+        "# Include OWASP ModSecurity CRS rules if installed\n" \
+        "IncludeOptional /usr/share/modsecurity-crs/*.load\n" \
+        "IncludeOptional /usr/share/modsecurity-crs/*.conf\n" \
+        "IncludeOptional /usr/share/modsecurity-crs/rules/*.conf\n" \
+        "</IfModule>" > /etc/apache2/mods-available/security2.conf
     fi
     # Check the needed modules are installed.
     fun_configApacheModules
@@ -617,10 +622,17 @@ fun_modSecure_install() {
     /usr/bin/mkdir -p /opt/modsecurity/var/data
     /usr/bin/chown -R www-data:www-data/opt/modsecurity/var/data
     /usr/bin/chmod -R 1733 /opt/modsecurity/var/data
+    /usr/bin/mkdir -p /opt/modsecurity/var/auditlogs
+    /usr/bin/chown -R www-data:root /opt/modsecurity/var/auditlogs
+    /usr/bin/chmod -R 1733 /opt/modsecurity/var/auditlogs
     # Update ModSec Config with default Dirs
     /usr/bin/sed -i 's/.*SecTmpDir.*/SecTmpDir\ \/opt\/modsecurity\/var\/tmp/' /etc/modsecurity/modsecurity.conf
     /usr/bin/sed -i 's/.*SecDataDir.*/SecDataDir\ \/opt\/modsecurity\/var\/data/' /etc/modsecurity/modsecurity.conf
     /usr/bin/sed -i 's/.*SecUploadDir.*/SecUploadDir\ \/opt\/modsecurity\/var\/upload/' /etc/modsecurity/modsecurity.conf
+    # Remove un-needed files
+    /usr/bin/rm -f /etc/modsecurity/modsecurity.conf-recommended
+    # Set Cron to get nightly updates to the ModSec Core Rules.
+    echo "0 0 * * 0 root /usr/bin/git fetch /usr/share/modsecurity-crs && /usr/bin/git pull /usr/share/modsecurity-crs && /usr/bin/systemctl reload apache2.service" > "/etc/cron.d/modsec-crc-update"
     # Restart Apache
     fun_priorityCMD "systemctl restart apache2.service" "Apache service restart for ModSec" 0
     # Confirm the ModSecurity Module is loaded.
@@ -740,26 +752,64 @@ fun_apacheSecConfig() {
     <p>Hmm.. We seem to be having some technical difficulties. Hang tight.</p>" > /var/www/html/custom_50x.html
     ##
     # Prevent ServerTokens, Trace, and ServerSignature Data Leak
-    echo -e "TraceEnable Off\nServerTokens Prod \nServerSignature Off \nServerName localhost" >> /etc/apache2/apache2.conf
+    echo -e "TraceEnable Off\nServerTokens Prod \nServerSignature Off \nServerName localhost" >> /etc/apache2/conf-enabled/security.conf    
     # Update the default site config
-    echo "
-    <VirtualHost *:80>
-        ServerAdmin webmaster@localhost
-        DocumentRoot /var/www/html
-        ErrorLog \${APACHE_LOG_DIR}/error.log
-        CustomLog \${APACHE_LOG_DIR}/access.log combined
-        # Visitor who do not know a VitualHost name of a site hosted here are redirected to Google.com.
-        Redirect \"/\" \"https://google.com/\"
-        SecRuleEngine On
-        SecRule ARGS:modsecparam \"@contains test\" \"id:4321,deny,status:403,msg:'ModSecurity test rule has triggered'\"
-    </VirtualHost>" > /etc/apache2/sites-available/000-default.conf
+    echo -e '<VirtualHost *:80>\n' \
+    '	ServerAdmin webmaster@localhost\n' \
+    '	DocumentRoot /var/www/html\n' \
+    '	LogLevel info ssl:warn\n' \
+    '	SecAuditLog ${APACHE_LOG_DIR}/modsec.log	\n' \
+    '	ErrorLog ${APACHE_LOG_DIR}/error.log\n' \
+    '	CustomLog ${APACHE_LOG_DIR}/access.log combined\n' \
+    '	<IfModule security2_module>\n' \
+    '		SecRuleEngine On\n' \
+    '		SecTmpDir /opt/modsecurity/var/tmp\n' \
+    '		SecUploadDir /opt/modsecurity/var/upload\n' \
+    '		SecAuditLogStorageDir /opt/modsecurity/var/auditlogs\n' \
+    '		SecAuditLogType Concurrent\n' \
+    '		SecAuditLogDirMode 1733\n' \
+    '		SecAuditLogFileMode 0550\n' \
+    '	</IfModule>\n' \
+    '	# Visitor who do not know a VitualHost name of a site hosted here are redirected to Google.com.\n' \
+    '	Redirect "/" "https://google.com/"\n' \
+    '</VirtualHost>\n' \
+    '##\n' \
+    '<IfModule mod_ssl.c>\n' \
+    '	<VirtualHost _default_:443>\n' \
+    '	ServerAdmin webmaster@localhost\n' \
+    '	DocumentRoot /var/www/html\n' \
+    '	LogLevel info ssl:warn\n' \
+    '	SecAuditLog ${APACHE_LOG_DIR}/modsec.log	\n' \
+    '	ErrorLog ${APACHE_LOG_DIR}/error.log\n' \
+    '	CustomLog ${APACHE_LOG_DIR}/access.log combined\n' \
+    '	<IfModule security2_module>\n' \
+    '		SecRuleEngine On\n' \
+    '		SecTmpDir /opt/modsecurity/var/tmp\n' \
+    '		SecUploadDir /opt/modsecurity/var/upload\n' \
+    '		SecAuditLogStorageDir /opt/modsecurity/var/auditlogs\n' \
+    '		SecAuditLogType Concurrent\n' \
+    '		SecAuditLogDirMode 1733\n' \
+    '		SecAuditLogFileMode 0550\n' \
+    '	</IfModule>\n' \
+    '	SSLEngine on\n' \
+    '	SSLCertificateFile	/etc/ssl/certs/ssl-cert-snakeoil.pem\n' \
+    '	SSLCertificateKeyFile /etc/ssl/private/ssl-cert-snakeoil.key\n' \
+    '	<FilesMatch "\.(cgi|shtml|phtml|php)$">\n' \
+    '		SSLOptions +StdEnvVars\n' \
+    '	</FilesMatch>\n' \
+    '	<Directory /usr/lib/cgi-bin>\n' \
+    '		SSLOptions +StdEnvVars\n' \
+    '	</Directory>\n' \
+    '	# Visitor who do not know a VitualHost name of a site hosted here are redirected to Google.com.\n' \
+    '	Redirect "/" "https://google.com/"	\n' \
+    '	</VirtualHost>\n' \
+    '</IfModule>' > /etc/apache2/sites-available/000-default.conf
     ##
     # Set custom ErrorDocs globally. The error file must still exist in the user www-root dir.
-    echo -e "
-    ErrorDocument 401 /custom_404.html\nErrorDocument 403 /custom_404.html\nErrorDocument 404 /custom_404.html\nErrorDocument 405 /custom_404.html
-    ErrorDocument 410 /custom_404.html\nErrorDocument 411 /custom_404.html\nErrorDocument 412 /custom_404.html\nErrorDocument 413 /custom_404.html
-    ErrorDocument 414 /custom_404.html\nErrorDocument 415 /custom_404.html\nErrorDocument 500 /custom_50x.html\nErrorDocument 502 /custom_50x.html
-    ErrorDocument 503 /custom_50x.html\nErrorDocument 504 /custom_50x.html" >> /etc/apache2/apache2.conf
+    echo -e "ErrorDocument 401 /custom_404.html\nErrorDocument 403 /custom_404.html\nErrorDocument 404 /custom_404.html\nErrorDocument 405 /custom_404.html\n" \
+    "ErrorDocument 410 /custom_404.html\nErrorDocument 411 /custom_404.html\nErrorDocument 412 /custom_404.html\nErrorDocument 413 /custom_404.html\n" \
+    "ErrorDocument 414 /custom_404.html\nErrorDocument 415 /custom_404.html\nErrorDocument 500 /custom_50x.html\nErrorDocument 502 /custom_50x.html\n" \
+    "ErrorDocument 503 /custom_50x.html\nErrorDocument 504 /custom_50x.html" >> /etc/apache2/apache2.conf
 }
 ############################
 
@@ -789,57 +839,62 @@ fun_fail2banConfig() {
     # Get the IP address used for WAN access. Needed for the ignoreip config
     str_mainIpv4Addr=$(ip route get 1.1.1.1 | grep -oP 'src \K\S+')
     # Set the Jail Config
-    echo "
-    [DEFAULT]
-    ignoreip = 127.0.0.1/8 ${str_mainIpv4Addr}
-    bantime = 4w
-    findtime = 10m
-    maxretry = 4
-    backend = auto
-    usedns = warn
-    destemail = ${str_g_adminEmail}
-    sendername = $(hostname)_Fail2Ban@$(hostname -d)
-    banaction = iptables-multiport
-    mta = sendmail
-
-    [sshd]
-    enabled   = true
-
-    [apache]
-    enabled  = true
-    port     = http,https
-    filter   = apache-auth
-    logpath  = /var/log/apache*/*error.log
-            /home/*/logs/*error.log
-
-    [apache-overflows]
-    enabled  = true
-    port     = http,https
-    filter   = apache-overflows
-    logpath  = /var/log/apache*/*error.log
-            /home/*/logs/*error.log
-
-    [apache-badbots]
-    enabled  = true
-    port     = http,https
-    filter   = apache-badbots
-    logpath  = /var/log/apache*/*error.log
-            /home/*/logs/*error.log
-
-    [apache-nohome]
-    enabled  = true
-    port     = http,https
-    filter   = apache-nohome
-    logpath  = /var/log/apache*/*error.log
-            /home/*/logs/*error.log
-
-    [php-url-fopen]
-    enabled = true
-    port    = http,https
-    filter  = php-url-fopen
-    logpath = /var/log/apache*/*access.log
-            /home/*/logs/*access.log
-    " > /etc/fail2ban/jail.local
+    echo -e "[DEFAULT]\n" \
+    "ignoreip = 127.0.0.1/8 ${str_mainIpv4Addr}\n" \
+    "bantime = 4w\n" \
+    "findtime = 10m\n" \
+    "maxretry = 4\n" \
+    "backend = auto\n" \
+    "usedns = warn\n" \
+    "destemail = ${str_g_adminEmail}\n" \
+    "sendername = $(hostname)_Fail2Ban@$(hostname -d)\n" \
+    "banaction = iptables-multiport\n" \
+    "mta = sendmail\n" \
+    "\n" \
+    "[sshd]\n" \
+    "enabled   = true\n" \
+    "\n" \
+    "[apache]\n" \
+    "enabled  = true\n" \
+    "port     = http,https\n" \
+    "filter   = apache-auth\n" \
+    "logpath  = /var/log/apache*/*error.log\n" \
+    "/home/*/logs/*error.log\n" \
+    "\n" \
+    "[apache-overflows]\n" \
+    "enabled  = true\n" \
+    "port     = http,https\n" \
+    "filter   = apache-overflows\n" \
+    "logpath  = /var/log/apache*/*error.log\n" \
+    "/home/*/logs/*error.log\n" \
+    "\n" \
+    "[apache-badbots]\n" \
+    "enabled  = true\n" \
+    "port     = http,https\n" \
+    "filter   = apache-badbots\n" \
+    "logpath  = /var/log/apache*/*error.log\n" \
+    "/home/*/logs/*error.log\n" \
+    "\n" \
+    "[apache-nohome]\n" \
+    "enabled  = true\n" \
+    "port     = http,https\n" \
+    "filter   = apache-nohome\n" \
+    "logpath  = /var/log/apache*/*error.log\n" \
+    "/home/*/logs/*error.log\n" \
+    "\n" \
+    "[php-url-fopen]\n" \
+    "enabled = true\n" \
+    "port    = http,https\n" \
+    "filter  = php-url-fopen\n" \
+    "logpath = /var/log/apache*/*access.log\n" \
+    "/home/*/logs/*access.log\n" \
+    "\n" \
+    "[modsec]\n" \
+    "enabled = true\n" \
+    "filter = apache-modsecurity\n" \
+    "maxretry = 1\n" \
+    "logpath = /var/log/apache*/*error.log\n" \
+    "/home/*/logs/*error.log\n"  > /etc/fail2ban/jail.local
     #
     # Set the correct file permissions.
     chown root:root /etc/fail2ban/*.local
@@ -1199,7 +1254,7 @@ fun_installClamAV() {
     # Install ClamAV and configure daily scanning and quarantine. OSSEC will alert when malware is discovered.
     local str_cronFile str_quarantineDir str_clamavLog str_clamavConfigFile
     str_cronFile='/etc/cron.d/clamdscan'
-    str_quarantineDir='/tmp/quarantine'
+    str_quarantineDir='/opt/clamav/quarantine'
     str_clamavLog='/var/log/clamav/clamdscan.log'
     str_clamavConfigFile='/etc/clamav/clamd.conf'
     # Install all the needed packages.
@@ -1209,7 +1264,7 @@ fun_installClamAV() {
     # Update Signitures
     fun_priorityCMD "/usr/bin/freshclam" "FreshClam Update"
     # Make quarantine DIR for discovered malware.
-    /usr/bin/mkdir "${str_quarantineDir}"
+    /usr/bin/mkdir -p "${str_quarantineDir}"
     # Make sure the quarantine DIR cannot have files within it executed. This is to make sure malware is not executed, ever.
     /usr/bin/chmod 600 "${str_quarantineDir}"
     # Add daily clamAV scan to cron.d.
@@ -1672,6 +1727,9 @@ fun_fullInstall() {
 
     # Check if there was errors during install.
     fun_checkForInstallErrors
+
+    # Log the installed version
+    echo "VERSION:${str_g_logFile}" | tee -a -i -- "${str_g_logFile}"
 
     # Finishing flare.
     fun_diamondLampLogo

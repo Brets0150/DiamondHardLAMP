@@ -33,7 +33,6 @@ str_g_webMysqlToolWebDir='/usr/share/phpmyadmin/' # Other default DIRs of MySQL 
 #######################
 #### END CONFIG #######
 #######################
-#######################
 ### Console Colors ####
 #### DO NOT CHANGE ####
 #######################

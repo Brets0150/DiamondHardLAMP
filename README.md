@@ -1,5 +1,3 @@
-# Work in Progress - DHL not done at this time.
-
 # Diamond Hard LAMP
 
 ![DiamondHardLAMP Logo](https://cybergladius.com/wp-content/uploads/2021/11/logo_2_small.png)
@@ -22,14 +20,14 @@ Steps
 5. Add your first webhosting account
 
 ## DHL Build Out - Step 1
-DHL was built for the most recent versions of Ubuntu; 20.04 and 21.04. Either 20.04 or 21.04 will work, but I would recommend the newest version. I would recommend the following as the minimum settings for your VM.
+DHL is built for the most recent Long Terms Support(LTS) version of Ubuntu; 20.04 LTS. I recommend the following as the minimum settings for your VM.
 - 4x CPU cores
 - 8 GB RAM
 - 8 GB Swap space(This needs to match your RAM amount)
 - 32 GB Disk Space, This really depends on how much data you want to store.
 - 1x WAN(Internet) IPv4 Address
 
-If you decide to use a Proxmox container, enable Nesting, and it has to be Unprivileged.
+Note: AppArmor cannot run appropriately inside a container. Additionally, containers are considered less secure than the segmentation VMs provide. For these reasons, DHL requires a VM and not a container.
 
 ##  DHL Build Out - Step 2 to 4
 Run the below command to install DHL.
@@ -73,7 +71,7 @@ nano ./settings.sh
 - Each Apache Website runs under its own user account; mpm-itk module.
 - Apache configured to not leak any data about itself.
 - Apache Module mod_headers installed. Allows ModSecurity modify HTTP request and response headers, stops threats.
-- ModSecurity configured to most up-to-date and best free rules sets.
+- ModSecurity configured to most up-to-date with Core Rule Set.
 - MariaDB has all the baseline security configured. 
 - ".htaccess" protects the PhpMyAdmin web UI, adding another layer of protection.
 - All ".htaccess" passwords are stored with the highest BCrypt hashing. Brute-Force cracking is not practical.
@@ -88,3 +86,4 @@ nano ./settings.sh
 - Updates are done automatically. If an upgrade requires a reboot, the Admin is emailed to it.
 - Configure the firewall only to allow ports 22, 80, and 443 from any destination. All incoming traffic is dropped.
 - Check and configure hostname correctly.
+# 

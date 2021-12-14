@@ -47,7 +47,11 @@ nano ./settings.sh
 # Install and build a full DHL LAMP stack. 
 ./DiamondWebServerManager.sh --install
 ```
+After the install you will be given the new admin credentials. Copys these to a safe place, you will not see them again.
+![DiamondHardLAMP Admin Details](https://cybergladius.com/wp-content/uploads/2021/11/dhl_install_complete.png)
 
+##  DHL Build Out - Step 5
+Now we 
 
 # 
 
@@ -72,6 +76,7 @@ nano ./settings.sh
 - Apache configured to not leak any data about itself.
 - Apache Module mod_headers installed. Allows ModSecurity modify HTTP request and response headers, stops threats.
 - ModSecurity configured to most up-to-date with Core Rule Set.
+- ModSecurity rules are update nightly.
 - MariaDB has all the baseline security configured. 
 - ".htaccess" protects the PhpMyAdmin web UI, adding another layer of protection.
 - All ".htaccess" passwords are stored with the highest BCrypt hashing. Brute-Force cracking is not practical.

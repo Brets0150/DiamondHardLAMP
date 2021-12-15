@@ -1,4 +1,4 @@
-# Diamond Hard LAMP
+# [**Diamond Hard LAMP**](https://cybergladius.com/diamond-hard-lamp/)
 
 ![DiamondHardLAMP Logo](https://cybergladius.com/wp-content/uploads/2021/11/logo_2_small.png)
 # 

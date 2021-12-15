@@ -1,10 +1,10 @@
 # [**Diamond Hard LAMP**](https://cybergladius.com/diamond-hard-lamp/)
 
-<span style="display:block;text-align:center">
-    <div style="text-align:center">
-        <img src="https://cybergladius.com/wp-content/uploads/2021/11/DHL_logo_2-600x518.png" />
+<div align="center">
+    <div style="display: flex; align-items: flex-start;">
+        <img align=top src="https://cybergladius.com/wp-content/uploads/2021/11/DHL_logo_2-600x518.png" />
     </div>
-</span>
+</div>
 
 # 
 ### What is Diamond Hard LAMP
@@ -92,6 +92,22 @@ DHL deploys websites in a way you would expect a shared-hosting system would. Ea
  - Access to Apache logs for their website only. Allows the User to troubleshoot there own issues.
  - User can add .htaccess file to any web directory to quickly add another layer of security to a directory.
  - Access to PhpMyAdmin to full manager their own database.
+
+# 
+
+# DHL Help Menu
+
+<div align="center">
+    <div style="display: flex; align-items: flex-start;">
+        <img align=top src="https://cybergladius.com/wp-content/uploads/2021/12/dhl_assci_log.png" />
+    </div>
+</div>
+
+<div align="center">
+    <div style="display: flex; align-items: flex-start;">
+        <img align=top src="https://cybergladius.com/wp-content/uploads/2021/12/dhl_help-menu.png" />
+    </div>
+</div>
 
 # 
 

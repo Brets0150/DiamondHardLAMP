@@ -1,6 +1,11 @@
 # [**Diamond Hard LAMP**](https://cybergladius.com/diamond-hard-lamp/)
 
-![DiamondHardLAMP Logo](https://cybergladius.com/wp-content/uploads/2021/11/logo_2_small.png)
+<div align="center">
+    <div style="display: flex; align-items: flex-start;">
+        <img align=top src="https://cybergladius.com/wp-content/uploads/2021/11/DHL_logo_2-600x518.png" />
+    </div>
+</div>
+
 # 
 ### What is Diamond Hard LAMP
 Building a Linux Apache MySQL PHP(LAMP) web hosting server is easy, anyone can build one with a 5-minute tutorial. Securing a LAMP web hosting server, on the other hand, is very hard and time-consuming. There are many details and packages you need to know about, and that knowledge only comes with experience. Diamond Hard LAMP aims to cover any experience shortfalls for you!
@@ -87,6 +92,22 @@ DHL deploys websites in a way you would expect a shared-hosting system would. Ea
  - Access to Apache logs for their website only. Allows the User to troubleshoot there own issues.
  - User can add .htaccess file to any web directory to quickly add another layer of security to a directory.
  - Access to PhpMyAdmin to full manager their own database.
+
+# 
+
+# DHL Help Menu
+
+<div align="center">
+    <div style="display: flex; align-items: flex-start;">
+        <img align=top src="https://cybergladius.com/wp-content/uploads/2021/12/dhl_assci_log.png" />
+    </div>
+</div>
+
+<div align="center">
+    <div style="display: flex; align-items: flex-start;">
+        <img align=top src="https://cybergladius.com/wp-content/uploads/2021/12/dhl_help-menu.png" />
+    </div>
+</div>
 
 # 
 

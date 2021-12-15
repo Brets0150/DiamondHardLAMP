@@ -12,7 +12,7 @@ Over the years I have built scripts to automate my roles as a Linux System Admin
 # DHL Build Out Process
 **Overview**
 
-Steps
+Steps to install DHL
 1. Build a new Vitual Machine
 2. Clone DHL GitHub codebase
 3. Configure Your Unique Server Settings

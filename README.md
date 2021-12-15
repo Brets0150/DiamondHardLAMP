@@ -1,6 +1,11 @@
 # [**Diamond Hard LAMP**](https://cybergladius.com/diamond-hard-lamp/)
 
-![DiamondHardLAMP Logo](https://cybergladius.com/wp-content/uploads/2021/11/logo_2_small.png)
+<span style="display:block;text-align:center">
+    <div style="text-align:center">
+        <img src="https://cybergladius.com/wp-content/uploads/2021/11/DHL_logo_2-600x518.png" />
+    </div>
+</span>
+
 # 
 ### What is Diamond Hard LAMP
 Building a Linux Apache MySQL PHP(LAMP) web hosting server is easy, anyone can build one with a 5-minute tutorial. Securing a LAMP web hosting server, on the other hand, is very hard and time-consuming. There are many details and packages you need to know about, and that knowledge only comes with experience. Diamond Hard LAMP aims to cover any experience shortfalls for you!

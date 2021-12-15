@@ -21,7 +21,8 @@ The bulk of the main code has been completed. The script can build a secure serv
 - Each Apache Website runs under its own user account; mpm-itk module.
 - Apache configured to not leak any data about itself.
 - Apache Module mod_headers installed. Allows ModSecurity modify HTTP request and response headers, stops threats.
-- ModSecurity configured to most up-to-date and best free rules sets.
+- ModSecurity configured to most up-to-date with Core Rule Set.
+- ModSecurity rules are update nightly.
 - MariaDB has all the baseline security configured. 
 - ".htaccess" protects the PhpMyAdmin web UI, adding another layer of protection.
 - All ".htaccess" passwords are stored with the highest BCrypt hashing. Brute-Force cracking is not practical.
@@ -33,6 +34,7 @@ The bulk of the main code has been completed. The script can build a secure serv
 - ClamAV is configured to run a daily scan on the system.
 - Fail2Ban is configured to review logs on the system and works with ModSecurity to block attackers automatically.
 - OSSec is set up to monitor integrity across the systems and alert Admin when needed. 
-- Updates are done automatically. If an upgrade requires a reboot, the Admin is emailed to it.
-- Configure the firewall only to allow ports 22, 80, and 443 from any destination. All incoming traffic is dropped.
+- Updates are done automatically. If an upgrade requires a reboot, the Admin is emailed about it.
+- Configure the firewall only to allow ports 22, 80, and 443 from any destination. All other incoming traffic is dropped.
 - Check and configure hostname correctly.
+# 

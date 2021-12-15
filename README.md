@@ -83,10 +83,10 @@ Copy these details to a secure location; you will never see this data again.
 # Website Management Design
 DHL deploys websites in a way you would expect a shared-hosting system would. Each Website has its own user account, access rights, logins, and segmented directories. Below is a list of the services a user has access to so they can manage their own website.
 
-    - SFTP – To upload and download files
-    - Access to Apache logs for their website only. Allows the User to troubleshoot there own issues.
-    - User can add .htaccess file to any web directory to quickly add another layer of security to a directory.
-    - Access to PhpMyAdmin to full manager their own database.
+ - SFTP – To upload and download files
+ - Access to Apache logs for their website only. Allows the User to troubleshoot there own issues.
+ - User can add .htaccess file to any web directory to quickly add another layer of security to a directory.
+ - Access to PhpMyAdmin to full manager their own database.
 
 # 
 

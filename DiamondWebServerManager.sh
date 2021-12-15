@@ -22,13 +22,13 @@
 str_g_command="$1"
 
 # Set DHL Version Number
-str_g_version='1.0-beta'
+str_g_version='1.0.1'
 
 # Get script's current DIR
 str_g_scriptsDir="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 # Config file location and name.
-str_g_settings_file_name="${str_g_scriptsDir}/settings_mine.sh"
+str_g_settings_file_name="${str_g_scriptsDir}/settings.sh"
 
 # This scripts log file.
 str_g_logFile="${str_g_scriptsDir}/.dhl_install_log.txt"
@@ -41,15 +41,15 @@ str_g_logFile="${str_g_scriptsDir}/.dhl_install_log.txt"
 fun_helpMenu() {
     echo -e ''
     echo -e "   ${color_BICyan}Command Line Options ${color_NC}"
-    echo -e "     --install    = Installs all the core packages that make up a LAMP Server; Apache2, PHP,"
+    echo -e "   --install      = Installs all the core packages that make up a LAMP Server; Apache2, PHP,"
     echo -e "                    PHPMyAdmin, MariaDB(MySQL). Along with the Core LAMP packages, all the "
     echo -e "                    software needed to make the webserver security-hardened is installed. See"
     echo -e "                    the below URL if you wish to know more details."
     echo -e ""
-    echo -e "                     - ${color_UCyan} URL: https://cybergladius.com/diamond-hard-lamp/ ${color_NC}"
+    echo -e "                       ${color_UCyan} URL: https://cybergladius.com/diamond-hard-lamp/ ${color_NC}"
     echo -e ''
-    echo -e "     --addwebuser = Add a new website to be hosted on the server. The new account will have a"
-    echo -e "                    few usernames & passwords created. This is required to have keep the account"
+    echo -e "  --addwebuser    = Add a new website to be hosted on the server. The new account will have a"
+    echo -e "    -aw             few usernames & passwords created. This is required to have keep the account"
     echo -e "                    secure. The account will have a UN+PW for .HTAccess(extra security that can"
     echo -e "                    be added to any web DIR and is used to access the PHPMyAdmin web UI), a"
     echo -e "                    MariaDB UN+PW and database name, and a SFTP UN+PW for file uploads. All"
@@ -57,8 +57,29 @@ fun_helpMenu() {
     echo -e "                    them not worthless to attackers."
     echo -e "                    "
     echo -e ''
-    echo -e "     --status     = Check the status and setting of the server. Helpful when troubleshooting."
+    echo -e "  --status       =  Check the status and setting of the server. Helpful when troubleshooting."
+    echo -e "    -s           "
     echo -e ''
+    echo -e "  --manage       =  A set of tools to assist admins with website related tasks."
+    echo -e "    -m              |----Tools----"
+    echo -e "                    |- Install WordPress to a website and add the basic security hardening. This"
+    echo -e "                    |   will overwrite existing data in the users \"wwwroot\" folder! "
+    echo -e "                    |"
+    echo -e "                    | - Review and investigate ModSecurity rules triggered on a website. Search a "
+    echo -e "                    |    websites error log for ModSec rule IDs and get more details about the trigger."
+    echo -e "                    |"
+    echo -e "                    |- Multi-tail a websites log files. A quick way to monitor all logs related to a"
+    echo -e "                    |    website in realtime."
+    echo -e "                    |-------------"
+    echo -e "                    "
+    echo -e "  --aareload     =  Reload AppArmor config. Needed if AppArmor profiles are updated."
+    echo -e "    -aar"
+    echo -e ""
+    echo -e "  --reloadapache =  Reload Apache's config after confirming there are no errors in the config."
+    echo -e "    -ra                 "
+    echo -e ""
+    echo -e "  --version       =  Display DHL current version."
+    echo -e "    -v"
     echo -e "                    "
 
 }
@@ -361,101 +382,101 @@ fun_addNewAccount() {
     ##
     echo -e "# HTTP site Config for ${str_domainName}\n" \
     "<VirtualHost *:80>\n" \
-    "	ServerAdmin admin@${str_domainName}\n" \
-    "	ServerName ${str_domainName}\n" \
-    "	ServerAlias www.${str_domainName}\n" \
-    "	AADefaultHatName ${str_domainName}-a2\n" \
-    "	DocumentRoot /home/${str_userName}/wwwroot/\n" \
-    "	#\n" \
-    "	RewriteEngine On\n" \
-    "	RewriteCond %{HTTPS} off [OR]\n" \
-    "	RewriteCond \"%{HTTP_HOST}\" \"^www\.\" [NC]\n" \
-    "	RewriteCond \"%{HTTP_HOST}\" \"!^$\"\n" \
-    "	RewriteRule \"^/?(.*)\"      \"https://%{HTTP_HOST}/\$1\" [L,R=301,NE]\n" \
-    "	#\n" \
-    "	<IfModule mpm_itk_module>\n" \
-    "		AssignUserId ${str_userName} ${str_userName}\n" \
-    "	</IfModule>\n" \
-    "	#\n" \
-    "	<IfModule security2_module>\n" \
-    "		SecRuleEngine On\n" \
-    "		SecTmpDir /home/${str_userName}/.ModSecurity\n" \
-    "		SecUploadDir /home/${str_userName}/.ModSecurity\n" \
-    "		SecAuditLogStorageDir /home/${str_userName}/.ModSecurity\n" \
-    "		SecAuditLogType Concurrent\n" \
-    "		SecAuditLogDirMode 1733\n" \
-    "		SecAuditLogFileMode 0550\n" \
-    "	</IfModule>\n" \
-    "	#\n" \
-    "	<Directory /home/${str_userName}/wwwroot/>\n" \
-    "		AllowOverride All\n" \
-    "		Require all granted\n" \
-    "		AAHatName ${str_domainName}-a2\n" \
-    "	</Directory>\n" \
-    "	#\n" \
-    "	LogLevel warn\n" \
-    "	SecAuditLog /home/${str_userName}/logs/${str_domainName}_modsec.log\n" \
-    "	ErrorLog /home/${str_userName}/logs/${str_domainName}_error.log\n" \
-    "	CustomLog /home/${str_userName}/logs/${str_domainName}_access.log combined\n" \
+    "  ServerAdmin admin@${str_domainName}\n" \
+    "  ServerName ${str_domainName}\n" \
+    "  ServerAlias www.${str_domainName}\n" \
+    "  AADefaultHatName ${str_domainName}-a2\n" \
+    "  DocumentRoot /home/${str_userName}/wwwroot/\n" \
+    "  #\n" \
+    "  RewriteEngine On\n" \
+    "  RewriteCond %{HTTPS} off [OR]\n" \
+    "  RewriteCond \"%{HTTP_HOST}\" \"^www\.\" [NC]\n" \
+    "  RewriteCond \"%{HTTP_HOST}\" \"!^$\"\n" \
+    "  RewriteRule \"^/?(.*)\" \"https://%{HTTP_HOST}/\$1\" [L,R=301,NE]\n" \
+    "  #\n" \
+    "  <IfModule mpm_itk_module>\n" \
+    "    AssignUserId ${str_userName} ${str_userName}\n" \
+    "  </IfModule>\n" \
+    "  #\n" \
+    "  <IfModule security2_module>\n" \
+    "    SecRuleEngine On\n" \
+    "    SecTmpDir /home/${str_userName}/.ModSecurity\n" \
+    "    SecUploadDir /home/${str_userName}/.ModSecurity\n" \
+    "    SecAuditLogStorageDir /home/${str_userName}/.ModSecurity\n" \
+    "    SecAuditLogType Concurrent\n" \
+    "    SecAuditLogDirMode 1733\n" \
+    "    SecAuditLogFileMode 0550\n" \
+    "  </IfModule>\n" \
+    "  #\n" \
+    "  <Directory /home/${str_userName}/wwwroot/>\n" \
+    "    AllowOverride All\n" \
+    "    Require all granted\n" \
+    "    AAHatName ${str_domainName}-a2\n" \
+    "  </Directory>\n" \
+    "  #\n" \
+    "  LogLevel warn\n" \
+    "  SecAuditLog /home/${str_userName}/logs/${str_domainName}_modsec.log\n" \
+    "  ErrorLog /home/${str_userName}/logs/${str_domainName}_error.log\n" \
+    "  CustomLog /home/${str_userName}/logs/${str_domainName}_access.log combined\n" \
     "</VirtualHost>\n" \
     "##\n" \
     "# HTTPS site Config for ${str_domainName}\n" \
     "<IfModule mod_ssl.c>\n" \
-    "	<VirtualHost _default_:443>\n" \
-    "		ServerAdmin admin@${str_domainName}\n" \
-    "		ServerName ${str_domainName}\n" \
-    "		ServerAlias www.${str_domainName}\n" \
-    "		AADefaultHatName ${str_domainName}-a2\n" \
-    "		DocumentRoot /home/${str_userName}/wwwroot/\n" \
-    "		#\n" \
-    "		<IfModule mpm_itk_module>\n" \
-    "			AssignUserId ${str_userName} ${str_userName}\n" \
-    "		</IfModule>\n" \
-    "		#\n" \
-    "		<IfModule security2_module>\n" \
-    "			SecRuleEngine On\n" \
-    "			SecTmpDir /home/${str_userName}/.ModSecurity\n" \
-    "			SecUploadDir /home/${str_userName}/.ModSecurity\n" \
-    "			SecAuditLogStorageDir /home/${str_userName}/.ModSecurity\n" \
-    "			SecAuditLogType Concurrent\n" \
-    "			SecAuditLogDirMode 1733\n" \
-    "		SecAuditLogFileMode 0550\n" \
-    "		</IfModule>\n" \
-    "		#\n" \
-    "		<Directory /home/${str_userName}/wwwroot/>\n" \
-    "			AllowOverride All\n" \
-    "			Require all granted\n" \
-    "			AAHatName ${str_domainName}-a2\n" \
-    "		</Directory>\n" \
-    "		#\n" \
-    "		# Enable HTTP/2, if available\n" \
-    "		ProtocolsHonorOrder on\n" \
-    "		Protocols h2 h2c http/1.1\n" \
-    "		#\n" \
-    "		# HTTP Strict Transport Security (mod_headers is required) (63072000 seconds)\n" \
-    "		Header always set Strict-Transport-Security \"max-age=63072000\"\n" \
-    "		#\n" \
-    "		# SSL Settings and Options\n" \
-    "		SSLEngine on\n" \
-    "		SSLStrictSNIVHostCheck on\n" \
-    "		SSLCertificateFile /home/${str_userName}/ssl/${str_domainName}.crt\n" \
-    "		SSLCertificateKeyFile /home/${str_userName}/ssl/${str_domainName}.key\n" \
-    "		#\n" \
-    "		<FilesMatch \"\.(cgi|shtml|phtml|php)$\">\n" \
-    "			SSLOptions +StdEnvVars\n" \
-    "		</FilesMatch>\n" \
-    "		#\n" \
-    "		<Directory /usr/lib/cgi-bin>\n" \
-    "			SSLOptions +StdEnvVars\n" \
-    "		</Directory>\n" \
-    "		#\n" \
-    "		# Logging Settings\n" \
-    "		LogLevel warn\n" \
-    "		SecAuditLog /home/${str_userName}/logs/${str_domainName}_modsec.log\n" \
-    "		ErrorLog /home/${str_userName}/logs/${str_domainName}_error.log\n" \
-    "		CustomLog /home/${str_userName}/logs/${str_domainName}_access.log combined\n" \
-    "		#\n" \
-    "	</VirtualHost>\n" \
+    "  <VirtualHost _default_:443>\n" \
+    "    ServerAdmin admin@${str_domainName}\n" \
+    "    ServerName ${str_domainName}\n" \
+    "    ServerAlias www.${str_domainName}\n" \
+    "    AADefaultHatName ${str_domainName}-a2\n" \
+    "    DocumentRoot /home/${str_userName}/wwwroot/\n" \
+    "    #\n" \
+    "    <IfModule mpm_itk_module>\n" \
+    "      AssignUserId ${str_userName} ${str_userName}\n" \
+    "    </IfModule>\n" \
+    "    #\n" \
+    "    <IfModule security2_module>\n" \
+    "      SecRuleEngine On\n" \
+    "      SecTmpDir /home/${str_userName}/.ModSecurity\n" \
+    "      SecUploadDir /home/${str_userName}/.ModSecurity\n" \
+    "      SecAuditLogStorageDir /home/${str_userName}/.ModSecurity\n" \
+    "      SecAuditLogType Concurrent\n" \
+    "      SecAuditLogDirMode 1733\n" \
+    "    SecAuditLogFileMode 0550\n" \
+    "    </IfModule>\n" \
+    "    #\n" \
+    "    <Directory /home/${str_userName}/wwwroot/>\n" \
+    "      AllowOverride All\n" \
+    "      Require all granted\n" \
+    "      AAHatName ${str_domainName}-a2\n" \
+    "    </Directory>\n" \
+    "    #\n" \
+    "    # Enable HTTP/2, if available\n" \
+    "    ProtocolsHonorOrder on\n" \
+    "    Protocols h2 h2c http/1.1\n" \
+    "    #\n" \
+    "    # HTTP Strict Transport Security (mod_headers is required) (63072000 seconds)\n" \
+    "    Header always set Strict-Transport-Security \"max-age=63072000\"\n" \
+    "    #\n" \
+    "    # SSL Settings and Options\n" \
+    "    SSLEngine on\n" \
+    "    SSLStrictSNIVHostCheck on\n" \
+    "    SSLCertificateFile /home/${str_userName}/ssl/${str_domainName}.crt\n" \
+    "    SSLCertificateKeyFile /home/${str_userName}/ssl/${str_domainName}.key\n" \
+    "    #\n" \
+    "    <FilesMatch \"\.(cgi|shtml|phtml|php)$\">\n" \
+    "      SSLOptions +StdEnvVars\n" \
+    "    </FilesMatch>\n" \
+    "    #\n" \
+    "    <Directory /usr/lib/cgi-bin>\n" \
+    "      SSLOptions +StdEnvVars\n" \
+    "    </Directory>\n" \
+    "    #\n" \
+    "    # Logging Settings\n" \
+    "    LogLevel warn\n" \
+    "    SecAuditLog /home/${str_userName}/logs/${str_domainName}_modsec.log\n" \
+    "    ErrorLog /home/${str_userName}/logs/${str_domainName}_error.log\n" \
+    "    CustomLog /home/${str_userName}/logs/${str_domainName}_access.log combined\n" \
+    "    #\n" \
+    "  </VirtualHost>\n" \
     "</IfModule>"> "${str_apacheConfigFile}"
     ############################
     # Create the AppArmor Config
@@ -464,8 +485,9 @@ fun_addNewAccount() {
     "    #include <abstractions/apache2-common>\n" \
     "    #include <abstractions/base>\n" \
     "    #include <abstractions/php>\n" \
+    "    #include <abstractions/user-tmp>\n" \
     "    # Allow Read-Write Access to main Web DIR\n" \
-    "    /home/${str_userName}/wwwroot/** wr,\n" \
+    "    /home/${str_userName}/wwwroot/** wrk,\n" \
     "    # Allow Read-only access for authenticating .htaccess\n" \
     "    /home/${str_userName}/.secret/.htpasswd r,\n" \
     "    /etc/apache2/.secret/.htpasswd r,\n" \
@@ -620,7 +642,7 @@ fun_modSecure_install() {
     /usr/bin/chown -R root:www-data /opt/modsecurity/var/tmp
     /usr/bin/chmod -R 750 /opt/modsecurity/var/tmp
     /usr/bin/mkdir -p /opt/modsecurity/var/data
-    /usr/bin/chown -R www-data:www-data/opt/modsecurity/var/data
+    /usr/bin/chown -R www-data:www-data /opt/modsecurity/var/data
     /usr/bin/chmod -R 1733 /opt/modsecurity/var/data
     /usr/bin/mkdir -p /opt/modsecurity/var/auditlogs
     /usr/bin/chown -R www-data:root /opt/modsecurity/var/auditlogs
@@ -629,8 +651,12 @@ fun_modSecure_install() {
     /usr/bin/sed -i 's/.*SecTmpDir.*/SecTmpDir\ \/opt\/modsecurity\/var\/tmp/' /etc/modsecurity/modsecurity.conf
     /usr/bin/sed -i 's/.*SecDataDir.*/SecDataDir\ \/opt\/modsecurity\/var\/data/' /etc/modsecurity/modsecurity.conf
     /usr/bin/sed -i 's/.*SecUploadDir.*/SecUploadDir\ \/opt\/modsecurity\/var\/upload/' /etc/modsecurity/modsecurity.conf
+    /usr/bin/sed -i 's/.*SecPcreMatchLimit.*/SecPcreMatchLimit\ 250000/' /etc/modsecurity/modsecurity.conf
+    /usr/bin/sed -i 's/.*SecPcreMatchLimitRecursion.*/SecPcreMatchLimitRecursion\ 250000/' /etc/modsecurity/modsecurity.conf
     # Remove un-needed files
     /usr/bin/rm -f /etc/modsecurity/modsecurity.conf-recommended
+    # Add WordPress rule exceptions
+    fun_modsec_WpWhitelist
     # Set Cron to get nightly updates to the ModSec Core Rules.
     echo "0 0 * * 0 root /usr/bin/git fetch /usr/share/modsecurity-crs && /usr/bin/git pull /usr/share/modsecurity-crs && /usr/bin/systemctl reload apache2.service" > "/etc/cron.d/modsec-crc-update"
     # Restart Apache
@@ -642,6 +668,57 @@ fun_modSecure_install() {
 }
 ############################
 
+fun_modsec_WpWhitelist(){
+    # The default ModSec excludion for WordPress sites.
+    echo -e '<LocationMatch "/wp-admin/post.php">\n'\
+    'SecRuleRemoveById 980130\n'\
+    'SecRuleRemoveById 951250\n'\
+    'SecRuleRemoveById 949110\n'\
+    'SecRuleRemoveById 941180\n'\
+    'SecRuleRemoveById 941160\n'\
+    'SecRuleRemoveById 932110\n'\
+    'SecRuleRemoveById 932105\n'\
+    'SecRuleRemoveById 932100\n'\
+    'SecRuleRemoveById 930120\n'\
+    'SecRuleRemoveById 300016\n'\
+    '</LocationMatch>\n'\
+    '#\n'\
+    '<LocationMatch "/wp-admin/nav-menus.php">\n'\
+    'SecRuleRemoveById 300016\n'\
+    '</LocationMatch>\n'\
+    '#\n'\
+    '<LocationMatch "(/wp-admin/|/wp-login.php)">\n'\
+    'SecRuleRemoveById 950117\n'\
+    'SecRuleRemoveById 950005\n'\
+    'SecRuleRemovebyID 981173\n'\
+    'SecRuleRemovebyId 960024\n'\
+    '</LocationMatch>\n'\
+    '#\n'\
+    '<LocationMatch "/wp-admin/load-scripts.php">\n'\
+    'SecRuleRemoveById 981173\n'\
+    '</LocationMatch>\n'\
+    '#\n'\
+    '<LocationMatch "/wp-admin/plugins.php">\n'\
+    'SecRuleRemoveById 981173\n'\
+    '</LocationMatch>\n'\
+    '#\n'\
+    '<LocationMatch "/wp-admin/customize.php">\n'\
+    'SecRuleRemoveById 981173\n'\
+    '</LocationMatch>\n'\
+    '#\n'\
+    '<LocationMatch "/wp-json/wp/v2/posts/">\n'\
+    'SecRuleRemoveById 930120\n'\
+    'SecRuleRemoveById 932100\n'\
+    'SecRuleRemoveById 932105\n'\
+    'SecRuleRemoveById 932110\n'\
+    'SecRuleRemoveById 941160\n'\
+    'SecRuleRemoveById 941180\n'\
+    'SecRuleRemoveById 949110\n'\
+    'SecRuleRemoveById 933160\n'\
+    '</LocationMatch>' > '/etc/modsecurity/whitelist-rules.conf'
+}
+############################
+
 fun_baseInstall() {
     # Get variables needed for new install.
     local str_webAdminUsername str_webAdminPassword str_clearTextMysqlRootPW str_mysqlSecSetupScript
@@ -650,7 +727,7 @@ fun_baseInstall() {
     str_clearTextMysqlRootPW="${3}"
     # Install all the needed packages.
     export DEBIAN_FRONTEND=noninteractive
-    fun_priorityCMD "apt-get install -yq phpmyadmin mariadb-server apache2 php git unzip htop atop bash-completion libapache2-mpm-itk libpam-pwquality bc" "Core Package Install"
+    fun_priorityCMD "apt-get install -yq phpmyadmin mariadb-server apache2 php multitail git unzip htop atop bash-completion libapache2-mpm-itk libpam-pwquality bc php7.4-sqlite3" "Core Package Install"
     ############################
     ######## MySQL Set Up ######
     # These are the key commands run in "mysql_secure_installation". I have distilled that script to the below, making automation better..
@@ -806,9 +883,9 @@ fun_apacheSecConfig() {
     '</IfModule>' > /etc/apache2/sites-available/000-default.conf
     ##
     # Set custom ErrorDocs globally. The error file must still exist in the user www-root dir.
-    echo -e "ErrorDocument 401 /custom_404.html\nErrorDocument 403 /custom_404.html\nErrorDocument 404 /custom_404.html\nErrorDocument 405 /custom_404.html\n" \
-    "ErrorDocument 410 /custom_404.html\nErrorDocument 411 /custom_404.html\nErrorDocument 412 /custom_404.html\nErrorDocument 413 /custom_404.html\n" \
-    "ErrorDocument 414 /custom_404.html\nErrorDocument 415 /custom_404.html\nErrorDocument 500 /custom_50x.html\nErrorDocument 502 /custom_50x.html\n" \
+    echo -e "ErrorDocument 401 /custom_404.html\nErrorDocument 403 /custom_404.html\nErrorDocument 404 /custom_404.html\nErrorDocument 405 /custom_404.html\n"\
+    "ErrorDocument 410 /custom_404.html\nErrorDocument 411 /custom_404.html\nErrorDocument 412 /custom_404.html\nErrorDocument 413 /custom_404.html\n"\
+    "ErrorDocument 414 /custom_404.html\nErrorDocument 415 /custom_404.html\nErrorDocument 500 /custom_50x.html\nErrorDocument 502 /custom_50x.html\n"\
     "ErrorDocument 503 /custom_50x.html\nErrorDocument 504 /custom_50x.html" >> /etc/apache2/apache2.conf
 }
 ############################
@@ -859,42 +936,42 @@ fun_fail2banConfig() {
     "port     = http,https\n" \
     "filter   = apache-auth\n" \
     "logpath  = /var/log/apache*/*error.log\n" \
-    "/home/*/logs/*error.log\n" \
+    "\t/home/*/logs/*error.log\n" \
     "\n" \
     "[apache-overflows]\n" \
     "enabled  = true\n" \
     "port     = http,https\n" \
     "filter   = apache-overflows\n" \
     "logpath  = /var/log/apache*/*error.log\n" \
-    "/home/*/logs/*error.log\n" \
+    "\t/home/*/logs/*error.log\n" \
     "\n" \
     "[apache-badbots]\n" \
     "enabled  = true\n" \
     "port     = http,https\n" \
     "filter   = apache-badbots\n" \
     "logpath  = /var/log/apache*/*error.log\n" \
-    "/home/*/logs/*error.log\n" \
+    "\t/home/*/logs/*error.log\n" \
     "\n" \
     "[apache-nohome]\n" \
     "enabled  = true\n" \
     "port     = http,https\n" \
     "filter   = apache-nohome\n" \
     "logpath  = /var/log/apache*/*error.log\n" \
-    "/home/*/logs/*error.log\n" \
+    "\t/home/*/logs/*error.log\n" \
     "\n" \
     "[php-url-fopen]\n" \
     "enabled = true\n" \
     "port    = http,https\n" \
     "filter  = php-url-fopen\n" \
     "logpath = /var/log/apache*/*access.log\n" \
-    "/home/*/logs/*access.log\n" \
+    "\t/home/*/logs/*access.log\n" \
     "\n" \
     "[modsec]\n" \
     "enabled = true\n" \
     "filter = apache-modsecurity\n" \
     "maxretry = 1\n" \
     "logpath = /var/log/apache*/*error.log\n" \
-    "/home/*/logs/*error.log\n"  > /etc/fail2ban/jail.local
+    "\t/home/*/logs/*error.log\n"  > /etc/fail2ban/jail.local
     #
     # Set the correct file permissions.
     chown root:root /etc/fail2ban/*.local
@@ -1384,10 +1461,10 @@ fun_createWebUserInfoFile() {
     str_databaseName="${4}"
     str_addedDate="$(date +%m/%d/%Y)"
     # Create a file with the web users details. Needed to do backups & deletes.
-    echo -e 'DomainName="'"${str_domainName}"'"\n' \
-    'Username="'"${str_userName}"'"\n' \
-    'DatabaseUsername="'"${str_databaseUserName}"'"\n' \
-    'DatabaseName="'"${str_databaseName}"'"\n' \
+    echo -e 'DomainName="'"${str_domainName}"'"\n'\
+    'SystemUsername="'"${str_userName}"'"\n'\
+    'DatabaseUsername="'"${str_databaseUserName}"'"\n'\
+    'DatabaseName="'"${str_databaseName}"'"\n'\
     'AddedDate="'"${str_addedDate}"'"' > "/home/${str_userName:?}/.user_info"
     # Only root should be able to read this file. Eventhough it hold low-level data.
     chown root:root "/home/${str_userName:?}/.user_info"
@@ -1659,6 +1736,300 @@ fun_configApacheModules() {
 }
 ############################
 
+fun_reloadApacheSafely(){
+    # Test the Apache Config for errors. If the config is good gracfully restart the service.
+    if /usr/sbin/apachectl configtest ; then
+        echo -e "${color_GREEN} The Apache config looks good, reloading..${color_NC}"
+        /usr/bin/systemctl reload apache2.service
+    else
+        echo -e "${color_RED} Error in Apache config!${color_NC}"
+    fi
+}
+############################
+
+fun_installWP() {
+    # Install WordPress to a web-user account. After basic install, add basic hardening to the site.
+    # USAGE: fun_installWP
+    ##
+    # Initialize and localize the variables
+    local str_userName str_confirm
+    # Get the web-user data needed for this function.
+    local ary_SiteData
+    declare -A ary_SiteData
+    fun_gatherUserData ary_SiteData
+    # Confirm the user understands what he is asking for and the domain name he is doing it to.
+    echo -e "${color_YELLOW}Are you sure you what to install WordPress for the below domain name?${color_NC}"
+    echo -e "${color_RED}!!FILES WILL BE OVERWRITTEN!!${color_NC}"
+    echo ''
+    echo -e "DomainName: ${color_YELLOW}${ary_SiteData['username']}${color_NC}"
+    echo ''
+    read -r -p 'y/N?  :' str_confirm
+    if [ "${str_confirm}" = 'y' ]; then
+        # Download and install the latest WordPress Version.
+        wget 'https://wordpress.org/latest.zip' -O '/tmp/wp_latest.zip'
+        unzip -o -q '/tmp/wp_latest.zip' -d '/tmp/wp_latest'
+        cp -r /tmp/wp_latest/wordpress/* /home/"${ary_SiteData['username']}"/wwwroot/
+        # Get Latest WordFence Version
+        str_wfUrl="$(curl -qs https://wordpress.org/plugins/wordfence/ |grep -i downloadUrl|tr -d ','|awk -F': ' '{print $2}'|tr -d \" )"
+        wget "${str_wfUrl}" -O '/tmp/wf_latest.zip'
+        unzip -o -q '/tmp/wf_latest.zip' -d '/tmp/wf_latest'
+        cp -r '/tmp/wf_latest/wordfence' "/home/""${ary_SiteData['username']}""/wwwroot/wp-content/plugins/"
+        # Protect wp-admin dir with .htaccess.
+        cp "/home/""${ary_SiteData['username']}""/.htaccess" "/home/""${ary_SiteData['username']}""/wwwroot/wp-admin/"
+        # Right the permissions for the site.
+        chown -R "${ary_SiteData['username']}". /home/"${ary_SiteData['username']}"/wwwroot
+        chmod -R 2775 /home/"${ary_SiteData['username']}"/wwwroot
+        # Remove the site default html page; its not needed.
+        rm -f /home/"${ary_SiteData['username']}"/wwwroot/index.html
+        # Remove tmp files.
+        rm -rf /tmp/wp_latest*
+        rm -rf /tmp/wf_latest*
+    else
+        echo -e "${color_YELLOW}WordPress Install Aborted, stopping.${color_NC}"
+        exit 0
+    fi
+}
+############################
+
+fun_gatherUserData(){
+    # This fuction searches for all the '.user_info' in the system which contain web-user site data.
+    #  The use then selects web-user account they want to work on. The user selection is then returned as an associative array.
+    # USAGE: local ary_SiteData ; declare -A ary_SiteData ; fun_gatherUserData ary_SiteData ; declare -p ary_SiteData
+    ##
+    # Initialize and localize the variables
+    ##
+    # Return an associative array to the requesting function. The requesting function
+    #  must pass their local associative array variable name as an argument to this function ca
+    local -n ary_returnSiteData=$1
+    # declare -A ary_returnSiteData
+    local ary_userFiles ary_userData
+    declare -a ary_domainNames
+    declare -A ary_userData
+    declare -A ary_allUserData
+    # Search for '.user_info' files, which hold web-user details.
+    declare -a ary_userFiles="$(find /home/*/ -name '.user_info' -type f)"
+    # Make sure ary_userFiles is not empty.
+    if [[ -z "${ary_userFiles[*]}" ]]; then
+        echo -e "${color_RED}No User Data Files Found! Exiting...${color_NC}"
+        exit 1
+    fi
+    # For all the '.user_info' files found load their variables into memeory.
+    for tmp_str_file in ${ary_userFiles[@]}; do
+        # Use the variables in the file to build an associative array
+        ary_userData["username"]="$(grep 'SystemUsername' "${tmp_str_file}" | awk -F'=' '{print $2}'| tr -d '"')"
+        ary_userData["domainname"]="$(grep 'DomainName' "${tmp_str_file}" | awk -F'=' '{print $2}'| tr -d '"')"
+        ary_userData["databaseUsername"]="$(grep 'DatabaseUsername' "${tmp_str_file}" | awk -F'=' '{print $2}'| tr -d '"')"
+        ary_userData["databaseName"]="$(grep 'DatabaseName' "${tmp_str_file}" | awk -F'=' '{print $2}'| tr -d '"')"
+        ary_userData["addedDate"]="$(grep 'AddedDate' "${tmp_str_file}" | awk -F'=' '{print $2}'| tr -d '"')"
+        # Add just the domain name to an array. This is needed for the next 'select' loop.
+        ary_domainNames+=("${ary_userData["domainname"]}")
+        # Load ary_userData associative array into another associative array called ary_allUserData.
+        for tmp_str_key in "${!ary_userData[@]}"  ; do
+            ary_allUserData["${ary_userData["domainname"]}",${tmp_str_key}]=${ary_userData[$tmp_str_key]}
+        done
+    done
+    ##
+    # Display a list of Domain Names being hosted on the system and let the user choose the one he wish to interact with.
+    PS3="Input the NUMBER of Domain Name you wish to work with: "
+    select tmp_str_domainname in "${ary_domainNames[@]}"; do
+        if [[ -z "${tmp_str_domainname}" ]]; then
+            echo -e "${color_RED}Number selected is empty!${color_NC}"
+            exit 1
+        else
+            # Load the new associative array with the data of the selected site.
+            ary_returnSiteData["username"]="${ary_allUserData["${tmp_str_domainname}",username]}"
+            ary_returnSiteData["domainname"]="${ary_allUserData["${tmp_str_domainname}",domainname]}"
+            ary_returnSiteData["databaseUsername"]="${ary_allUserData["${tmp_str_domainname}",databaseUsername]}"
+            ary_returnSiteData["databaseName"]="${ary_allUserData["${tmp_str_domainname}",databaseName]}"
+            ary_returnSiteData["addedDate"]="${ary_allUserData["${tmp_str_domainname}",addedDate]}"
+            break
+        fi
+        # Catch all invalid inputs and loop select.
+        case $tmp_opt in
+                *)
+            echo "Invalid option $REPLY";;
+        esac
+    done
+}
+############################
+
+fun_modsecLoggedTriggered(){
+    # This function is to automate the research process of investigating ModSec rules that are triggered on a website.
+    # USAGE: fun_modsecLoggedTriggered
+    ##
+    # Get the web-user data needed for this function.
+    local ary_SiteData ary_triggeredRules str_confirm str_usersErrorLogFile
+    declare -a ary_triggeredRules
+    declare -A ary_SiteData
+    fun_gatherUserData ary_SiteData
+    str_modsecInstallDir='/usr/share/modsecurity-crs/'
+    # Create a variable with the users error log.
+    str_usersErrorLogFile="/home/""${ary_SiteData['username']}""/logs/""${ary_SiteData['domainname']}""_error.log"
+    # Build an array of the ModSec rules triggered and logged.
+    str_ruleNumbers=$(/usr/bin/sed -n 's/.*\[id "\([^"]*\)"].*/\1/p' "${str_usersErrorLogFile}" | tr -d '-' | sort -u | sed '/^$/d')
+    for tmp_str_rule in ${str_ruleNumbers}; do
+        # Add the Rule to an array for later use.
+        ary_triggeredRules+=("${tmp_str_rule}")
+        # Look up the rule descrition.
+        str_ruleDescription="$(grep -r ${tmp_str_rule} "${str_modsecInstallDir}"| grep 'description:\|desc:'|awk -F':' '{print $3}'|sort -u|head -n1)"
+        # Display the rules triggered and its description.
+        echo "${tmp_str_rule} -- ${str_ruleDescription}"
+    done
+    # Ask the user if they want to investigate a rule futher.
+    echo -e "${color_NC}Would you like to investigate a rule further?${color_NC}"
+    echo ''
+    read -r -p 'y/N?  :' str_confirm
+    if [ "${str_confirm}" = 'y' ]; then
+        echo -e "${color_BICyan}=========================================${color_NC}"
+        ##
+        PS3="Select the number of the rule you want to investigate: "
+        select tmp_opt in ${ary_triggeredRules[@]} 'BuildIgnoreConfig' 'SearchNoIdRules' 'Quit'; do
+            # Search the website error logs for the rule selected and display the last two error messages.
+            grep -i "${tmp_opt}" "${str_usersErrorLogFile}"|tail -n 2|grep --color -i '\[id '
+            echo -e "${color_BICyan}=========================================${color_NC}"
+            #
+            case $tmp_opt in
+                ##
+                'BuildIgnoreConfig')
+                    echo -e "${color_BICyan}=========================================${color_NC}"
+                    for str_tmp_ruleNume in "${ary_triggeredRules[@]}";do
+                        echo "SecRuleRemoveById ${str_tmp_ruleNume}"
+                    done
+                    echo -e "${color_BICyan}=========================================${color_NC}"
+                    echo -e "${color_YELLOW}Add the above lines to ModSec Config under the 'LocationMatch'${color_NC}"
+                    echo -e "${color_YELLOW}that match(URL) that triggered on;${color_NC}"
+                    echo -e "${color_YELLOW}Ex: <LocationMatch \"/wp-admin/post.php\">  ${color_NC}"
+                    echo -e "${color_YELLOW}Default whitelist config file '/etc/modsecurity/whitelist-rules.conf'. ${color_NC}"
+                    echo -e "${color_BICyan}=========================================${color_NC}"
+                ;;
+                ##
+                'SearchNoIdRules')
+                    local ary_tmp_noIdAlerts ary_noIdAlerts str_time ary_fixRules ary_fixRulesDedup
+                    declare -a ary_noIdAlerts
+                    declare -a ary_fixRules
+                    declare -a ary_fixRulesDedup
+                    readarray -t ary_tmp_noIdAlerts <<<"""$(grep -Ei ':error.*modsec.*\[id "-"\]' "${str_usersErrorLogFile}"|awk -F '[\\[\\]]' '{print $14 ":" $16 ":" $20}'|sort -u|tr -d ' ')"""
+                    for str_tmp_alert in ${ary_tmp_noIdAlerts[@]}; do
+                        local str_tmp_fileName int_tmp_lineNum int_upperLineNum str_tmp_errorUrl ary_tmp
+                        declare -i int_tmp_lineNum
+                        declare -i int_upperLineNum
+                        str_tmp_fileName="$(echo \"${str_tmp_alert}\"|awk -F: '{print $1}'|awk -F'"' '{print $3}')"
+                        int_tmp_lineNum="$(echo \"${str_tmp_alert}\"|awk -F: '{print $2}'|awk -F'"' '{print $2}')"
+                        str_tmp_errorUrl="$(echo \"${str_tmp_alert}\"|awk -F: '{print $3}'|awk -F'"' '{print $2}')"
+                        int_upperLineNum=$((${int_tmp_lineNum}-25))
+                        readarray -t ary_tmp < <(sed "${int_upperLineNum}"','"${int_tmp_lineNum}"'!d;/id:/!d;=' "${str_tmp_fileName}"|tail -n1|tr -d """[:lower:]\|[:upper:]\|':'\|','\|'\"'\|'\\\'\|' '""")
+                        ary_noIdAlerts+=("${ary_tmp}")
+                        echo "Rule     : ${ary_tmp}"
+                        echo "URL      : ${str_tmp_errorUrl}"
+                        echo "RuleFile : ${str_tmp_fileName}"
+                        echo '-----------------------------------------------'
+                        ary_fixRules+=('<LocationMatch "'"${str_tmp_errorUrl}"'">\n\tSecRuleRemoveById '"${ary_tmp}"'\n</LocationMatch>\n')
+                    done
+                    # Clean up the array of duplcates
+                    readarray -t ary_fixRulesDedup <<<"""$(printf "%s\n" "${ary_fixRules[@]}" | sort -uz)"""
+                    # Clear user responce variable.
+                    str_confirm=''
+                    # Ask use if they want to create a ModSec WhiteList file to disable the triggered rules.
+                    echo -e "\n${color_YELLOW}Would you like create a whitelist for the discovered NoLog-ID rule?${color_NC}\n"
+                    read -r -p 'y/N?  :' str_confirm
+                    # Check users responce and if 'y' make the new file.
+                    if [ "${str_confirm}" = 'y' ]; then
+                        str_time="$(date +'%s')"
+                        for str_tmp_line in "${ary_fixRulesDedup[@]}";do
+                            echo -e "${str_tmp_line}" >> "/etc/modsecurity/whitelist_rules_""${str_time}""_.conf"
+                        done
+                    fi
+                    break
+                ;;
+                #
+                'Quit'|'q')
+                break;;
+            esac
+        done
+    else
+        echo -e "${color_NC}Exiting..${color_NC}"
+    fi
+}
+############################
+
+fun_modsecSimplyLogCheck(){
+    # Simply grep a users apache error log to ModSec Triggers, then out put the # of triggers, Rule # and URL.
+    # USAGE: fun_modsecSimplyLogCheck
+    ##
+    # Get the web-user account details
+    local ary_SiteData
+    declare -A ary_SiteData
+    fun_gatherUserData ary_SiteData
+    # Create a variable with the users error log.
+    str_usersErrorLogFile="/home/""${ary_SiteData['username']}""/logs/""${ary_SiteData['domainname']}""_error.log"
+    # Search the error log file for ModSec rules triggered and out put them.
+    grep 'ModSecurity' "${str_usersErrorLogFile}" | grep "\[id" | sed -E -e 's#^.*\[id "([0-9]*).*hostname "([a-z0-9\-\_\.]*)"].*uri "(.*?)".*"#\1 \2 \3#' | cut -d\" -f1 | sort -n | uniq -c | sort -n
+    exit 0
+}
+############################
+
+fun_monitorErrorLogs(){
+    local ary_SiteData
+    declare -A ary_SiteData
+    fun_gatherUserData ary_SiteData
+    /usr/bin/multitail /var/log/syslog /home/"${ary_SiteData['username']}"/logs/"${ary_SiteData['domainname']}"_*
+}
+############################
+
+fun_manageWebUser(){
+    # Function to manage web-user accounts; AKA: websites. This a menu for that Admin to select the tool they wish to use.
+    # USAGE: fun_manageWebUser
+    ##
+    # Initialize and localize the variables
+    local ary_mgrTools
+    declare -a ary_mgrTools
+    # Add the tools to an array.
+    ary_mgrTools+=('LiveLogMonitor -- Monitor a websites logs in real time.')
+    ary_mgrTools+=('CheckModsecTriggers -- Check the logs of a website for rules triggered in ModSeccurity.')
+    ary_mgrTools+=('QuickModSecLogCheck -- Simple check of Apache Error Log for ModSec rules triggered by a website.')
+    ary_mgrTools+=('WpSecureInstall -- Install WordPress and secure it.')
+    # ary_mgrTools['']=""
+    ##
+    # Got to Look cool!
+    clear
+    fun_diamondLampLogo
+    echo -e '\n\n'
+    ##
+    PS3="Select the number of a website management tool: "
+    select tmp_opt in "${ary_mgrTools[@]}" "Quit" ; do
+    ##
+        case $tmp_opt in
+
+            QuickModSecLogCheck*)
+                fun_modsecSimplyLogCheck
+                break
+            ;;
+
+            LiveLogMonitor*)
+                fun_monitorErrorLogs
+                break
+            ;;
+
+            CheckModsecTriggers*)
+                fun_modsecLoggedTriggered
+                break
+            ;;
+
+            WpSecureInstall*)
+                fun_installWP
+                break
+            ;;
+
+            'Quit'|'q')
+                break
+            ;;
+            *)
+            echo "Invalid option $REPLY";;
+        esac
+    done
+}
+############################
+
 fun_fullInstall() {
 
     # Add the start time to the install log
@@ -1777,26 +2148,35 @@ case "${str_g_command}" in
         fun_fullInstall
         ;;
 
-    --test)
+    '--test'|'-t')
         # Test
+        # fun_gatherUserData
         ;;
 
-    --addwebuser)
+    '--addwebuser'|'-awu')
         fun_cgLogo
         clear
         fun_diamondLampLogo
         fun_getNewWebUserDetails
         ;;
 
-    --delwebuser)
+    '--delwebuser'|'-dwu')
         fun_deleteUserAccount
         ;;
 
-    --aareload)
+    '--manage'|'-m')
+        fun_manageWebUser
+        ;;
+
+    '--aareload'|'-aar')
         fun_reloadAA-Apache
         ;;
 
-    --status)
+    '--reloadapache'|'-ra')
+        fun_reloadApacheSafely
+        ;;
+
+    '--status'|'-s')
         fun_checkAllServicesStatus
         ;;
 

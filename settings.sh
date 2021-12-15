@@ -23,7 +23,7 @@ str_g_ossecGitUrl='https://github.com/ossec/ossec-hids.git'
 # Configuration File locations and some minor settings.
 # Normally, these don't no need to change.
 #######################
-bln_g_letsencrypt_support=true                    # This options has to be 'true' or 'false' only.
+bln_g_letsencrypt_support=true                    # This options has to be 'true' or 'false' only. If you wish to use this, the server must be WAN accessible; no reverse proxy.
 str_g_mysqlRootUser='root'                        # Mysql root user maybe 'adminer' also, depends on our install.
 str_g_sftpGroup='sftp'
 str_g_webGroup='www-data'                         # Set this to the default group apache is using.

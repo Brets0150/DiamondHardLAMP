@@ -1,4 +1,4 @@
-# Diamond Hard LAMP
+# [**Diamond Hard LAMP**](https://cybergladius.com/diamond-hard-lamp/)
 
 ![DiamondHardLAMP Logo](https://cybergladius.com/wp-content/uploads/2021/11/logo_2_small.png)
 # 
@@ -12,7 +12,7 @@ Over the years I have built scripts to automate my roles as a Linux System Admin
 # DHL Build Out Process
 **Overview**
 
-Steps
+Steps to install DHL
 1. Build a new Vitual Machine
 2. Clone DHL GitHub codebase
 3. Configure Your Unique Server Settings
@@ -29,7 +29,7 @@ DHL is built for the most recent Long Terms Support(LTS) version of Ubuntu; 20.0
 
 Note: AppArmor cannot run appropriately inside a container. Additionally, containers are considered less secure than the segmentation VMs provide. For these reasons, DHL requires a VM and not a container.
 
-##  DHL Build Out - Step 2 to 4
+##  DHL Build Out - Step 2
 Run the below command to install DHL.
 ```bash
 # On a fresh install you will need the git package before you get going. 
@@ -40,18 +40,57 @@ git clone https://github.com/Brets0150/DiamondHardLAMP.git
 
 cd  ./DiamondHardLAMP
 chmod +x DiamondWebServerManager.sh
+```
 
+##  DHL Build Out - Step 3
+There are a few settings that must be configured so DHL can alert you correctly about events. Open up the “./settings.sh” file and filling the required settings. Make sure to review the LetsEncrypt option if you plan on using it.
+
+```bash
 # Update the settings file with the variable and systems settings. This MUST be updated!
 nano ./settings.sh
+```
+![DiamondHardLAMP Server Config](https://cybergladius.com/wp-content/uploads/2021/11/dhl_settings-1024x207.png)
 
+##  DHL Build Out - Step 4
+Now that we have the DHL GitHub codebase on the server, we can start the server setup. The “–install” command will install and configure all the security tools and features of DHL. The installer will take time to complete. The Diffie-Hellman Key generation, alone, can take up to an hour.
+
+```bash
 # Install and build a full DHL LAMP stack. 
 ./DiamondWebServerManager.sh --install
 ```
 
+After the installation of all tools and services is complete you will be provided the administrative credentials. Copy these details to a secure location; you will never see this data again.
+
+![DiamondHardLAMP Admin Details](https://cybergladius.com/wp-content/uploads/2021/11/dhl_install_complete.png)
+
+Note: The “PhpMyAdmin .htaccess” user name is actually “admin_2919” in the above image. The Admin account username is randomized every time the installer runs. This randomized username means there are now 9999 different possible usernames that may be applied. No one is brute-forcing this login with 9999 different possible usernames and a random 16 character password; good luck!
+
+##  DHL Build Out - Step 5
+To add a new Webhosting User use the below command.
+
+```bash
+# Run DHL's Add Web User Command. 
+./DiamondWebServerManager.sh --addwebuse
+```
+
+Running the command will prompt you for details about the new user account. 
+
+![DiamondHardLAMP Admin Details](https://cybergladius.com/wp-content/uploads/2021/12/dhl_addwebuser.png)
+
+Copy these details to a secure location; you will never see this data again. 
+#
+
+# Website Management Design
+DHL deploys websites in a way you would expect a shared-hosting system would. Each Website has its own user account, access rights, logins, and segmented directories. Below is a list of the services a user has access to so they can manage their own website.
+
+ - SFTP – To upload and download files
+ - Access to Apache logs for their website only. Allows the User to troubleshoot there own issues.
+ - User can add .htaccess file to any web directory to quickly add another layer of security to a directory.
+ - Access to PhpMyAdmin to full manager their own database.
 
 # 
 
-# Hardening Tools and Configurations
+# Hardening Features, Tools, and Configurations
 
 ## Services & Security Tools Include 
  - Apache latest
@@ -72,6 +111,7 @@ nano ./settings.sh
 - Apache configured to not leak any data about itself.
 - Apache Module mod_headers installed. Allows ModSecurity modify HTTP request and response headers, stops threats.
 - ModSecurity configured to most up-to-date with Core Rule Set.
+- ModSecurity rules are update nightly.
 - MariaDB has all the baseline security configured. 
 - ".htaccess" protects the PhpMyAdmin web UI, adding another layer of protection.
 - All ".htaccess" passwords are stored with the highest BCrypt hashing. Brute-Force cracking is not practical.
@@ -83,7 +123,16 @@ nano ./settings.sh
 - ClamAV is configured to run a daily scan on the system.
 - Fail2Ban is configured to review logs on the system and works with ModSecurity to block attackers automatically.
 - OSSec is set up to monitor integrity across the systems and alert Admin when needed. 
-- Updates are done automatically. If an upgrade requires a reboot, the Admin is emailed to it.
-- Configure the firewall only to allow ports 22, 80, and 443 from any destination. All incoming traffic is dropped.
+- Updates are done automatically. If an upgrade requires a reboot, the Admin is emailed about it.
+- Configure the firewall only to allow ports 22, 80, and 443 from any destination. All other incoming traffic is dropped.
 - Check and configure hostname correctly.
+
+# 
+
+# Planned Features
+- Individual site content, database, config backups, run nightly or on-demand.
+- Individual site Disk Quota limits and management.
+- Advanced Malicious PHP Code detection
+- On-Access Scanning malware detection.
+
 # 

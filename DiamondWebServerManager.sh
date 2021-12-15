@@ -1760,9 +1760,7 @@ fun_installWP() {
     # Confirm the user understands what he is asking for and the domain name he is doing it to.
     echo -e "${color_YELLOW}Are you sure you what to install WordPress for the below domain name?${color_NC}"
     echo -e "${color_RED}!!FILES WILL BE OVERWRITTEN!!${color_NC}"
-    echo ''
-    echo -e "DomainName: ${color_YELLOW}${ary_SiteData['username']}${color_NC}"
-    echo ''
+    echo -e "\nDomainName: ${color_YELLOW}${ary_SiteData['username']}${color_NC}\n"
     read -r -p 'y/N?  :' str_confirm
     if [ "${str_confirm}" = 'y' ]; then
         # Download and install the latest WordPress Version.
@@ -1968,6 +1966,36 @@ fun_modsecSimplyLogCheck(){
 }
 ############################
 
+fun_modsecLogCheckBuildWhitelist(){
+    # Simply grep a users apache error log to ModSec Triggers, then out put the # of triggers, Rule # and URL.
+    # The user then can add a rule and URL to the whitelist exceptions.
+    # USAGE: fun_modsecLogCheckBuildWhitelist
+    ##
+    # Get the web-user account details
+    local ary_SiteData str_time str_location str_ruleNum ary_Alerts str_usersErrorLogFile
+    declare -A ary_SiteData
+    fun_gatherUserData ary_SiteData
+    # Create a variable with the users error log.
+    str_usersErrorLogFile="/home/""${ary_SiteData['username']}""/logs/""${ary_SiteData['domainname']}""_error.log"
+    # Search the error log file for ModSec rules triggered and out put them.
+    readarray -t ary_Alerts <<<"""$(grep 'ModSecurity' "${str_usersErrorLogFile}" | grep "\[id" | sed -E -e 's#^.*\[id "([0-9]*).*hostname "([a-z0-9\-\_\.]*)"].*uri "(.*?)".*"#\1 \2 \3#' | cut -d\" -f1 | sort -n | uniq -c | sort -n)"""
+    echo -e "${color_BICyan}=============Alerts=Discovered===========${color_NC}"
+    echo -e "${color_BICyan}===#Hits=RuleID==DomainName======URL=====${color_NC}"
+    for str_tmp_alert in "${ary_Alerts[@]}"; do echo "${str_tmp_alert}";done
+    echo -e "${color_BICyan}=========================================${color_NC}"
+    PS3="Select the number you want to make a whitelist rule for: "
+    select tmp_opt in "${ary_Alerts[@]}" 'Quit'; do
+        case $tmp_opt in 'Quit'|'q') break;;esac
+        case $REPLY   in 'Quit'|'q') break;;esac
+        str_time="$(date +'%s')"
+        str_location="""$(echo ${tmp_opt}|awk -F' ' '{print $4}')"""
+        str_ruleNum="""$(echo ${tmp_opt}|awk -F' ' '{print $2}')"""
+        echo -e "<LocationMatch \"${str_location}\">\n\tSecRuleRemoveById ${str_ruleNum}\n</LocationMatch>" >> "/etc/modsecurity/whitelist_rules_""${str_time}""_.conf"
+    done
+    exit 0
+}
+############################
+
 fun_monitorErrorLogs(){
     local ary_SiteData
     declare -A ary_SiteData
@@ -1987,6 +2015,7 @@ fun_manageWebUser(){
     ary_mgrTools+=('LiveLogMonitor -- Monitor a websites logs in real time.')
     ary_mgrTools+=('CheckModsecTriggers -- Check the logs of a website for rules triggered in ModSeccurity.')
     ary_mgrTools+=('QuickModSecLogCheck -- Simple check of Apache Error Log for ModSec rules triggered by a website.')
+    ary_mgrTools+=('QuickModSecWhiteListRuleBuilder -- Build whitelist rules from triggered ModSec Rules.')
     ary_mgrTools+=('WpSecureInstall -- Install WordPress and secure it.')
     # ary_mgrTools['']=""
     ##
@@ -2002,6 +2031,11 @@ fun_manageWebUser(){
 
             QuickModSecLogCheck*)
                 fun_modsecSimplyLogCheck
+                break
+            ;;
+
+            QuickModSecWhiteListRuleBuilder*)
+                fun_modsecLogCheckBuildWhitelist
                 break
             ;;
 
@@ -2150,7 +2184,6 @@ case "${str_g_command}" in
 
     '--test'|'-t')
         # Test
-        # fun_gatherUserData
         ;;
 
     '--addwebuser'|'-awu')

@@ -85,7 +85,7 @@ The core guiding principle behind the user site configuration is segmentation. I
 4. Run DHL installer
 5. Add your first webhosting account
 
-### DHL Build Out - Step 1
+### DHL Installation Process - Step 1
 DHL is built for the most recent Long Terms Support(LTS) version of Ubuntu; 20.04 LTS. I recommend the following as the minimum settings for your VM.
 - 4x CPU cores
 - 8 GB RAM
@@ -95,7 +95,7 @@ DHL is built for the most recent Long Terms Support(LTS) version of Ubuntu; 20.0
 
 Note: AppArmor cannot run appropriately inside a container. Additionally, containers are considered less secure than the segmentation VMs provide. For these reasons, DHL requires a VM and not a container.
 
-###  DHL Build Out - Step 2
+###  DHL Installation Process - Step 2
 Run the below command to install DHL.
 ```bash
 # On a fresh install you will need the git package before you get going. 
@@ -108,7 +108,7 @@ cd  ./DiamondHardLAMP
 chmod +x DiamondWebServerManager.sh
 ```
 
-###  DHL Build Out - Step 3
+###  DHL Installation Process - Step 3
 There are a few settings that must be configured so DHL can alert you correctly about events. Open up the “./settings.sh” file and filling the required settings. Make sure to review the LetsEncrypt option if you plan on using it.
 
 ```bash
@@ -117,7 +117,7 @@ nano ./settings.sh
 ```
 ![DiamondHardLAMP Server Config](https://cybergladius.com/wp-content/uploads/2021/11/dhl_settings-1024x207.png)
 
-###  DHL Build Out - Step 4
+###  DHL Installation Process - Step 4
 Now that we have the DHL GitHub codebase on the server, we can start the server setup. The “–install” command will install and configure all the security tools and features of DHL. The installer will take time to complete. The Diffie-Hellman Key generation, alone, can take up to an hour.
 
 ```bash
@@ -131,7 +131,7 @@ After the installation of all tools and services is complete you will be provide
 
 Note: The “PhpMyAdmin .htaccess” user name is actually “admin_2919” in the above image. The Admin account username is randomized every time the installer runs. This randomized username means there are now 9999 different possible usernames that may be applied. No one is brute-forcing this login with 9999 different possible usernames and a random 16 character password; good luck!
 
-###  DHL Build Out - Step 5
+###  DHL Installation Process - Step 5
 To add a new Webhosting User use the below command.
 
 ```bash

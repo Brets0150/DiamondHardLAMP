@@ -8,7 +8,7 @@
 
 # 
 # What is Diamond Hard LAMP
-Diamond Hard LAMP(DHL) builds a Linux, Apache, MariaDB, PHP(LAMP) webhosting server with the maximum security-hardened services; diamond-hard. DHL incorporates all the security configurations, tools, and methodologies to form a suite of services working in concert together. The end result is a LAMP stack with very high security and automated management. If you host 
+Diamond Hard LAMP(DHL) builds a Linux, Apache, MariaDB, PHP(LAMP) webhosting server with the maximum security-hardened services; diamond-hard. DHL incorporates all the security configurations, tools, and methodologies to form a suite of services working in concert together. The end result is a LAMP stack with very high security and automated management.
 
 ### Jump Menu
 - [Website Management Design](#website-management-design)

@@ -15,15 +15,12 @@ str_g_state="Washington"
 str_g_locality="Seattle"
 str_g_organizationalunit="IT"
 #######################
-# URLs for packages
-#######################
-str_g_modsecGitUrl='https://github.com/coreruleset/coreruleset.git'
-str_g_ossecGitUrl='https://github.com/ossec/ossec-hids.git'
-#######################
 # Configuration File locations and some minor settings.
 # Normally, these don't no need to change.
 #######################
 bln_g_letsencrypt_support=true                    # This options has to be 'true' or 'false' only. If you wish to use this, the server must be WAN accessible; no reverse proxy.
+bln_g_usingReverseProxy=false                     # This options has to be 'true' or 'false' only. If you have a load balancer or reverse proxy in front of the webserver you
+                                                  #  need to set this to true. This will configure the system logging to capture the true visitors IP address, and not the LB or RP.
 str_g_mysqlRootUser='root'                        # Mysql root user maybe 'adminer' also, depends on our install.
 str_g_sftpGroup='sftp'
 str_g_webGroup='www-data'                         # Set this to the default group apache is using.
@@ -32,6 +29,12 @@ str_g_apache2Dir='/etc/apache2/'
 str_g_webMysqlToolWebDir='/usr/share/phpmyadmin/' # Other default DIRs of MySQL management tools, "/usr/share/adminer/adminer/", or "/usr/share/phpmyadmin/"
 #######################
 #### END CONFIG #######
+#######################
+## URLs for packages ##
+#### DO NOT CHANGE ####
+#######################
+str_g_modsecGitUrl='https://github.com/coreruleset/coreruleset.git'
+str_g_ossecGitUrl='https://github.com/ossec/ossec-hids.git'
 #######################
 ### Console Colors ####
 #### DO NOT CHANGE ####

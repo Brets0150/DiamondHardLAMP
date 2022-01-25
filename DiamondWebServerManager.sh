@@ -28,7 +28,7 @@ str_g_version='1.0.1'
 str_g_scriptsDir="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 # Config file location and name.
-str_g_settings_file_name="${str_g_scriptsDir}/settings.sh"
+str_g_settings_file_name="${str_g_scriptsDir}/settings_mine.sh"
 
 # This scripts log file.
 str_g_logFile="${str_g_scriptsDir}/.dhl_install_log.txt"
@@ -501,6 +501,10 @@ fun_addNewAccount() {
     "    /home/${str_userName}/logs/${str_domainName}_modsec.log w,\n" \
     "    # Allow Read-Write Access to MySQL service\n" \
     "    /run/mysqld/mysqld.sock wr,\n" \
+    "    # Allow Execute Access to dash shell\n" \
+    "    /usr/bin/dash ix,\n" \
+    "    # Allow Execute Access to sendmail\n" \
+    "    /usr/lib/sm.bin/sendmail Px,\n" \
     "    # Deny Access to Data leaking files.\n" \
     "    deny /home/${str_userName}/wwwroot/{Changelog,LICENSE,README,RELEASE-DATE-*,CONTRIBUTING.md,composer.*} r,\n" \
     "    # Deny access to Bash/sh\n" \
@@ -996,6 +1000,8 @@ fun_apparmorInstall() {
     fun_phpmyadminApparmor
     # Apache Install AppArmor Config
     fun_apacheApparmorConfig
+    # SendMail Install AppArmor Config
+    fun_sendmailApparmorConfig
     # Parse the Apache2 AppArmor profile.
     fun_priorityCMD "apparmor_parser -a /etc/apparmor.d/usr.sbin.apache2" "Apache's AppArmor profile enforced"
     # Enforce Apache2 AppArmor profile.
@@ -1112,6 +1118,23 @@ fun_apacheApparmorConfig() {
     '\n' \
     '  }\n' \
     '}' > /etc/apparmor.d/usr.sbin.apache2
+}
+############################
+
+fun_sendmailApparmorConfig() {
+    '# Last Modified: Tue Jan 25 17:04:18 2022\n' \
+    '#include <tunables/global>\n' \
+    '/usr/lib/sm.bin/sendmail flags=(complain) {\n' \
+    '  #include <abstractions/base>\n' \
+    '  #include <abstractions/nameservice>\n' \
+    '  #include <abstractions/openssl>\n' \
+    '  /etc/mail/service.switch r,\n' \
+    '  /etc/mail/submit.cf r,\n' \
+    '  /proc/loadavg r,\n' \
+    '  /proc/sys/kernel/random/boot_id r,\n' \
+    '  /usr/lib/sm.bin/sendmail mr,\n' \
+    '  owner /var/spool/mqueue-client/ r,\n' \
+    '}' > /etc/apparmor.d/usr.lib.sm.bin.sendmail
 }
 ############################
 
@@ -1530,6 +1553,9 @@ fun_checkAllServicesStatus() {
     # Check OSSEC Service status
     fun_priorityCMD "(systemctl status ossec.service) >/dev/null 2>&1" "OSSEC Service" 0
 
+    # Check Automatic Updates Service status
+    fun_priorityCMD "(systemctl status unattended-upgrades.service) >/dev/null 2>&1" "Automatic Updates Service" 0
+
     # Check Clam AntiVirus userspace daemon Service status
     fun_priorityCMD "(systemctl status clamav-daemon.service) >/dev/null 2>&1" "Clam AntiVirus userspace daemon Service" 0
 
@@ -1744,6 +1770,18 @@ fun_reloadApacheSafely(){
     else
         echo -e "${color_RED} Error in Apache config!${color_NC}"
     fi
+}
+############################
+
+fun_editAutomaticUpdates(){
+    # Just a simple function to make it easier to edit automatic updates settings.
+    # USAGE: fun_editAutomaticUpdates
+    ##
+    /usr/bin/nano -c -- '/etc/apt/apt.conf.d/50unattended-upgrades'
+    # Restart Automatic Updates Service status
+    fun_priorityCMD "(systemctl restart unattended-upgrades.service) >/dev/null 2>&1" "Automatic Updates Service Restart" 0
+    # Check Automatic Updates Service status
+    fun_priorityCMD "(systemctl status unattended-upgrades.service) >/dev/null 2>&1" "Automatic Updates Service Status" 0
 }
 ############################
 
@@ -2211,6 +2249,10 @@ case "${str_g_command}" in
 
     '--status'|'-s')
         fun_checkAllServicesStatus
+        ;;
+
+    '--editupdates'|'-eu')
+        fun_editAutomaticUpdates
         ;;
 
     '-v'|'v'|'version'|'--version')
